@@ -5,9 +5,11 @@ import connectDB from '@/lib/mongodb';
 import User, { UserRole } from '@/models/User';
 import { headers } from 'next/headers';
 
+import { connection } from 'next/server';
+
 export async function GET(request: Request) {
   try {
-    await headers(); // Opt into dynamic rendering
+    await connection();
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

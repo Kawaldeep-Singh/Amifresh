@@ -37,7 +37,7 @@ export default function NotFound() {
       </div>
       
       <div className="mt-12 text-sm text-gray-400 font-medium">
-        © {new Date().getFullYear()} Amifresh. All rights reserved.
+        © 2024 Amifresh. All rights reserved.
       </div>
     </div>
   );
