@@ -42,7 +42,7 @@ export default async function AdminUsersPage({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900">User Management</h1>
           <p className="text-sm text-gray-600 mt-1">
             Manage roles, statuses, and view user details.
           </p>
@@ -50,29 +50,29 @@ export default async function AdminUsersPage({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <Link href="/admin/users" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Total Users</div>
-          <div className="text-2xl font-bold">{stats.total}</div>
+        <Link href="/admin/users" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Total Users</div>
+          <div className="text-2xl font-extrabold text-gray-900">{stats.total}</div>
         </Link>
-        <Link href="/admin/users?status=ACTIVE" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Active</div>
-          <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+        <Link href="/admin/users?status=ACTIVE" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Active</div>
+          <div className="text-2xl font-extrabold text-primary">{stats.active}</div>
         </Link>
-        <Link href="/admin/users?role=MANAGER" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Managers</div>
-          <div className="text-2xl font-bold text-primary">{stats.managers}</div>
+        <Link href="/admin/users?role=MANAGER" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Managers</div>
+          <div className="text-2xl font-extrabold text-accent">{stats.managers}</div>
         </Link>
-        <Link href="/admin/users?role=MEMBER" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Members</div>
-          <div className="text-2xl font-bold text-blue-600">{stats.members}</div>
+        <Link href="/admin/users?role=MEMBER" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Members</div>
+          <div className="text-2xl font-extrabold text-primary-dark">{stats.members}</div>
         </Link>
-        <Link href="/admin/users?status=BLOCKED" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Blocked</div>
-          <div className="text-2xl font-bold text-red-600">{stats.blocked}</div>
+        <Link href="/admin/users?status=BLOCKED" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-danger hover:bg-red-50 transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-danger">Blocked</div>
+          <div className="text-2xl font-extrabold text-danger">{stats.blocked}</div>
         </Link>
-        <Link href="/admin/users?status=INACTIVE" className="bg-white p-4 rounded-xl border shadow-sm hover:border-primary transition-colors hover:shadow-md cursor-pointer block">
-          <div className="text-sm text-gray-500">Inactive</div>
-          <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
+        <Link href="/admin/users?status=INACTIVE" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-gray-50 transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-gray-700">Inactive</div>
+          <div className="text-2xl font-extrabold text-gray-600">{stats.inactive}</div>
         </Link>
       </div>
 
@@ -121,17 +121,17 @@ export default async function AdminUsersPage({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-primary-light">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role & Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referral Info</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Role & Status</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Referral Info</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Joined Date</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-primary-dark uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-border">
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">

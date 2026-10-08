@@ -1,0 +1,205 @@
+﻿'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Info } from 'lucide-react';
+import { registrationSchema } from '@/lib/validations/registration';
+
+type RegisterFormValues = z.infer<typeof registrationSchema>;
+
+function RegisterForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref') || '';
+
+  const [serverError, setServerError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [referrerName, setReferrerName] = useState('');
+  const [validatingRef, setValidatingRef] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      referralCode: refCode,
+    }
+  });
+
+  const referralCode = watch('referralCode');
+
+  useEffect(() => {
+    const validateReferral = async (code: string) => {
+      if (!code || code.length < 4) {
+        setReferrerName('');
+        return;
+      }
+      setValidatingRef(true);
+      try {
+        const res = await fetch(`/api/referrals/validate?code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setReferrerName(data.referrer.name);
+          setServerError('');
+        } else {
+          setReferrerName('');
+        }
+      } catch (err) {
+        setReferrerName('');
+      } finally {
+        setValidatingRef(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      validateReferral(referralCode as string);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [referralCode]);
+
+  const onSubmit = async (data: RegisterFormValues) => {
+    setServerError('');
+    setSuccess('');
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setServerError(result.error || 'Registration failed');
+        return;
+      }
+
+      setSuccess(result.message);
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+    } catch (err) {
+      setServerError('An unexpected error occurred. Please try again.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-bg py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-surface p-8 rounded-xl shadow-lg border border-border">
+        <div className="text-center">
+          <div className="mx-auto flex justify-center mb-6">
+            <Image src="/Logo.webp" alt="Amifresh Logo" width={200} height={60} className="object-contain" />
+          </div>
+          <h2 className="mt-6 text-3xl font-extrabold text-text-main">Create an account</h2>
+          <p className="mt-2 text-sm text-text-muted">
+            Join the Amifresh network today
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {serverError && (
+            <div className="bg-red-50 text-danger p-3 rounded-md text-sm border border-red-200">
+              {serverError}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm border border-green-200">
+              {success}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <Input
+              label="Full Name"
+              placeholder="Ashwam"
+              {...register('name')}
+              error={errors.name?.message}
+            />
+
+            <Input
+              label="Email Address"
+              type="email"
+              placeholder="amifresh@example.com"
+              {...register('email')}
+              error={errors.email?.message}
+            />
+
+            <Input
+              label="Phone Number"
+              placeholder="9876543210"
+              {...register('phone')}
+              error={errors.phone?.message}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              placeholder="ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó"
+              {...register('password')}
+              error={errors.password?.message}
+            />
+
+            <Input
+              label="Confirm Password"
+              type="password"
+              placeholder="ÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇóÔÇó"
+              {...register('confirmPassword')}
+              error={errors.confirmPassword?.message}
+            />
+
+            <div className="space-y-1">
+              <Input
+                label="Referral Code"
+                placeholder="Enter sponsor code"
+                {...register('referralCode')}
+                error={errors.referralCode?.message}
+              />
+              {validatingRef && <p className="text-sm text-text-muted">Validating referral code...</p>}
+              {referrerName && !validatingRef && (
+                <div className="flex items-center text-sm text-primary bg-primary-light p-2 rounded-md mt-2">
+                  <Info size={16} className="mr-2" />
+                  Your sponsor is: <strong>{referrerName}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" isLoading={isSubmitting}>
+            Register Account
+          </Button>
+
+          <div className="text-center mt-4">
+            <p className="text-sm text-text-muted">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-primary hover:text-primary-dark transition-colors">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
+  );
+}

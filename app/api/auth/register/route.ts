@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/auth/password';
+
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import RegistrationRequest, { RegistrationStatus } from '@/models/RegistrationRequest';
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
     }
     
-    const { name, email, phone, password, referralCode } = result.data;
+    const { name, email, phone, referralCode } = result.data;
     
     await dbConnect();
 
@@ -45,15 +45,11 @@ export async function POST(req: Request) {
       referrerId = referrer._id;
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-    
     // Create Registration Request for Admin Approval
     await RegistrationRequest.create({
       name,
       email,
       phone,
-      passwordHash: hashedPassword,
       referralCode,
       referrer: referrerId,
       status: RegistrationStatus.PENDING,

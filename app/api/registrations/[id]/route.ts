@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { getServerSession } from 'next-auth';
+import { hashPassword } from '@/lib/auth/password';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import mongoose from 'mongoose';
@@ -65,6 +67,22 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         finalReferrerId = referrerUser._id;
       }
 
+      // Generate unique loginId (SAKHI + 6 random digits)
+      let uniqueLoginId = '';
+      let isUnique = false;
+      while (!isUnique) {
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        uniqueLoginId = `SAKHI${randomNum}`;
+        const existingLoginId = await User.findOne({ loginId: uniqueLoginId }).session(session);
+        if (!existingLoginId) {
+          isUnique = true;
+        }
+      }
+
+      // Generate temporary password (6 characters)
+      const tempPassword = crypto.randomBytes(3).toString('hex').toLowerCase();
+      const hashedPassword = await hashPassword(tempPassword);
+
       // Generate referral code
       const newReferralCode = await generateUniqueReferralCode(request.name);
 
@@ -73,7 +91,9 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         name: request.name,
         email: request.email,
         phone: request.phone,
-        password: request.passwordHash,
+        password: hashedPassword,
+        loginId: uniqueLoginId,
+        mustChangePassword: true,
         role: UserRole.MEMBER,
         status: UserStatus.ACTIVE,
         referralCode: newReferralCode,
@@ -99,8 +119,14 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         action: 'REGISTRATION_APPROVED',
         entityType: 'User',
         entityId: newUser._id,
-        description: `Approved registration for ${request.email}`,
+        description: `Approved registration for ${request.email}. Generated ID: ${uniqueLoginId}`,
       }], { session });
+
+      // In a real app, send email/SMS with credentials here. For now, we will just return them.
+      // We will attach them to the response for the admin UI to display.
+      request.set('tempPassword', tempPassword, { strict: false });
+      request.set('loginId', uniqueLoginId, { strict: false });
+
     } else if (action === 'REJECT') {
       request.status = RegistrationStatus.REJECTED;
       request.rejectionReason = reason;
@@ -121,7 +147,14 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     await session.commitTransaction();
     session.endSession();
 
-    return NextResponse.json({ success: true, message: `Registration ${action.toLowerCase()}d successfully` });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Registration ${action.toLowerCase()}d successfully`,
+      credentials: action === 'APPROVE' ? {
+        loginId: request.get('loginId'),
+        tempPassword: request.get('tempPassword')
+      } : null
+    });
   } catch (error: any) {
     console.error('Process Registration Error:', error);
     if (session) {

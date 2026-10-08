@@ -19,6 +19,8 @@ export interface IUser extends Document {
   email: string;
   phone: string;
   password?: string;
+  loginId?: string;
+  mustChangePassword?: boolean;
   role: UserRole;
   referralCode: string;
   referredBy?: mongoose.Types.ObjectId | IUser;
@@ -37,6 +39,8 @@ const UserSchema: Schema = new Schema(
     email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
     password: { type: String, select: false },
+    loginId: { type: String, unique: true, sparse: true, index: true },
+    mustChangePassword: { type: Boolean, default: false },
     role: { type: String, enum: Object.values(UserRole), default: UserRole.MEMBER, index: true },
     referralCode: { type: String, required: true, unique: true, index: true },
     referredBy: { type: Schema.Types.ObjectId, ref: 'User', index: true },

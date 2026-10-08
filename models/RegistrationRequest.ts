@@ -10,7 +10,7 @@ export interface IRegistrationRequest extends Document {
   name: string;
   email: string;
   phone: string;
-  passwordHash: string;
+  passwordHash?: string;
   referralCode?: string;
   referrer?: mongoose.Types.ObjectId;
   status: RegistrationStatus;
@@ -26,7 +26,7 @@ const RegistrationRequestSchema: Schema = new Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
-    passwordHash: { type: String, required: true },
+    passwordHash: { type: String, required: false },
     referralCode: { type: String },
     referrer: { type: Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: Object.values(RegistrationStatus), default: RegistrationStatus.PENDING },

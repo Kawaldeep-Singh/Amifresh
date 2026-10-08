@@ -46,7 +46,6 @@ const registerSchema = z.object({
   photo: z.any().refine((val) => val, 'Required'),
   pan: z.any().refine((val) => val, 'Required'),
   aadhaar: z.any().refine((val) => val, 'Required'),
-  referralCode: z.string().optional(),
   terms: z.literal(true, {
     errorMap: () => ({ message: 'You must agree to T&C' }),
   }),
@@ -69,6 +68,7 @@ const Twitter = ({ size = 24 }: { size?: number }) => (
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -82,6 +82,8 @@ export default function RegisterPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsDarkMode(prefersDark);
   }, []);
 
   const {
@@ -103,43 +105,18 @@ export default function RegisterPage() {
   const aadhaarVal = watch('aadhaar');
 
   const onSubmit = async (data: RegisterFormValues) => {
-    try {
-      const payload = {
-        name: `${data.firstName} ${data.lastName}`.trim(),
-        email: data.email,
-        phone: data.mobile,
-        referralCode: data.referralCode,
-        // The other fields can be added to the payload as needed
-        dob: data.dob,
-        gender: data.gender,
-        address: data.address,
-        city: data.city,
-        state: data.state,
-        pinCode: data.pinCode,
-        fatherSpouseName: data.fatherSpouseName,
-      };
-
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Registration failed');
-        return;
-      }
-
-      setIsSuccess(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
-    } catch (error) {
-      alert('An error occurred');
-    }
+    console.log('Form submission placeholder:', data);
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value as string | Blob);
+    });
+    
+    // Simulate API
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSuccess(true);
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
   };
 
   const handleFileUpload = (field: keyof RegisterFormValues, file: File | null) => {
@@ -210,12 +187,12 @@ export default function RegisterPage() {
   if (!isMounted) return null;
 
   const DocUploadCard = ({ title, field, accept, mode, icon: Icon, val }: any) => (
-    <div className="bg-white  border border-[#E5E5E5]  rounded-xl p-4 flex flex-col items-center justify-between text-center relative overflow-hidden group">
-      <div className="mb-2 text-[#0F8A3C] "><Icon size={28} /></div>
-      <p className="font-semibold text-sm mb-3 ">{title}</p>
+    <div className="bg-white dark:bg-[#1C3628] border border-[#E5E5E5] dark:border-[#2A4D3B] rounded-xl p-4 flex flex-col items-center justify-between text-center relative overflow-hidden group">
+      <div className="mb-2 text-[#0F8A3C] dark:text-[#22B35A]"><Icon size={28} /></div>
+      <p className="font-semibold text-sm mb-3 dark:text-white">{title}</p>
       
       {val ? (
-        <div className="w-full relative h-24 bg-gray-100  rounded-lg flex items-center justify-center overflow-hidden border border-[#0F8A3C]/30">
+        <div className="w-full relative h-24 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden border border-[#0F8A3C]/30">
           {val.type?.startsWith('image/') ? (
             <img src={URL.createObjectURL(val)} alt={title} className="object-cover w-full h-full" />
           ) : (
@@ -228,10 +205,10 @@ export default function RegisterPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-2 w-full">
-          <button type="button" onClick={() => openWebcam(field, mode)} className="w-full text-xs font-semibold py-2 px-3 border border-[#0F8A3C] text-[#0F8A3C]   rounded-lg hover:bg-[#E7F6EC] :bg-[#22B35A]/10 transition-colors flex items-center justify-center gap-1">
+          <button type="button" onClick={() => openWebcam(field, mode)} className="w-full text-xs font-semibold py-2 px-3 border border-[#0F8A3C] text-[#0F8A3C] dark:text-[#22B35A] dark:border-[#22B35A] rounded-lg hover:bg-[#E7F6EC] dark:hover:bg-[#22B35A]/10 transition-colors flex items-center justify-center gap-1">
             <Camera size={14} /> Take Picture
           </button>
-          <label className="w-full text-xs font-semibold py-2 px-3 bg-[#FFFBF2]  border border-[#E5E5E5]  text-[#111111]  rounded-lg hover:bg-gray-50 :bg-[#203D2E] transition-colors flex items-center justify-center gap-1 cursor-pointer">
+          <label className="w-full text-xs font-semibold py-2 px-3 bg-[#FFFBF2] dark:bg-[#162A1F] border border-[#E5E5E5] dark:border-[#2A4D3B] text-[#111111] dark:text-[#F5F5F5] rounded-lg hover:bg-gray-50 dark:hover:bg-[#203D2E] transition-colors flex items-center justify-center gap-1 cursor-pointer">
             <Upload size={14} /> Upload
             <input type="file" accept={accept} className="hidden" onChange={(e) => handleFileUpload(field, e.target.files?.[0] || null)} />
           </label>
@@ -244,8 +221,16 @@ export default function RegisterPage() {
   );
 
   return (
-    <div>
-      <div className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 ${nunito.className} bg-[#FFF5E4]  overflow-hidden`}>
+    <div className={`${isDarkMode ? 'dark' : ''}`}>
+      <div className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 ${nunito.className} bg-[#FFF5E4] dark:bg-[#0F1A14] overflow-hidden`}>
+        
+        {/* Toggle Theme */}
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)} 
+          className="fixed top-4 right-4 z-50 p-2 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-md text-[#111111] dark:text-[#F5F5F5] hover:scale-110 transition-transform"
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
 
         {/* Global Styles for Animations */}
         <style dangerouslySetInnerHTML={{__html: `
@@ -271,26 +256,28 @@ export default function RegisterPage() {
         <img src="/Leaf.webp" className="absolute bottom-[10%] left-[2%] w-32 opacity-30 animate-sway pointer-events-none hidden lg:block" style={{animationDelay: '3s'}} alt="" />
 
         {/* LEFT PANEL */}
-        <div className="w-full lg:w-[38%] p-6 lg:p-12 xl:p-16 flex flex-col justify-between relative z-10 min-h-[30vh] lg:h-screen lg:sticky top-0 border-b lg:border-b-0 border-[#FFE3A8] ">
+        <div className="w-full lg:w-[38%] p-6 lg:p-12 xl:p-16 flex flex-col justify-between relative z-10 min-h-[30vh] lg:h-screen lg:sticky top-0 border-b lg:border-b-0 border-[#FFE3A8] dark:border-[#2A4D3B]">
           <div>
-            <div className="flex items-center gap-4 sm:gap-6 mb-2">
-              <div className="relative w-56 h-20 sm:w-72 sm:h-28">
-                <Image src="/Amifresh%20logo%20Light%20theam.webp" alt="AmiFresh" fill className="object-contain object-left" />
+            <div className="flex items-center gap-4 mb-8">
+              <div className="relative w-32 h-10">
+                <Image src="/Amifresh%20logo%20Light%20theam.webp" alt="AmiFresh" fill className="object-contain dark:hidden" />
+                <Image src="/Amifresh%20dark%20thema.webp" alt="AmiFresh" fill className="object-contain hidden dark:block" />
               </div>
-              <div className="w-px h-12 bg-black/10"></div>
-              <div className="relative w-40 h-20 sm:w-56 sm:h-28">
-                <Image src="/Sakhi%20Light.webp" alt="Sakhi" fill className="object-contain object-left" />
+              <div className="w-px h-8 bg-black/10 dark:bg-white/10"></div>
+              <div className="relative w-24 h-10">
+                <Image src="/Sakhi%20Light.webp" alt="Sakhi" fill className="object-contain dark:hidden" />
+                <Image src="/Sakhi%20dark%20tham.webp" alt="Sakhi" fill className="object-contain hidden dark:block" />
               </div>
             </div>
             
-            <p className={`${caveat.className} text-[#0B6B2E]  text-2xl mb-8 tracking-wide`}>Purity at your doorstep</p>
+            <p className={`${caveat.className} text-[#0B6B2E] dark:text-[#22B35A] text-2xl mb-8 tracking-wide`}>Purity at your doorstep</p>
             
             <div className={`${poppins.className} mb-8`}>
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-[#111111]  leading-tight mb-2">Work From Home</h1>
-              <h2 className="text-2xl lg:text-3xl font-bold text-[#111111]  mb-4">
-                Earn up to <span className="text-[#0F8A3C] ">₹75,000*</span>/Month
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-[#111111] dark:text-[#F5F5F5] leading-tight mb-2">Work From Home</h1>
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#111111] dark:text-[#F5F5F5] mb-4">
+                Earn up to <span className="text-[#0F8A3C] dark:text-[#22B35A]">₹75,000*</span>/Month
               </h2>
-              <p className="text-[#6B6B6B]  text-lg font-medium max-w-sm">
+              <p className="text-[#6B6B6B] dark:text-[#A0AAB2] text-lg font-medium max-w-sm">
                 Empowering women through our 'Sakhi Sales' program.
               </p>
             </div>
@@ -302,14 +289,14 @@ export default function RegisterPage() {
                 </span>
               ))}
             </div>
-            <p className="text-xs text-[#6B6B6B] ">*T&C Apply</p>
+            <p className="text-xs text-[#6B6B6B] dark:text-[#A0AAB2]">*T&C Apply</p>
           </div>
 
-          <div className="hidden lg:flex items-center gap-4 mt-8 pt-8 border-t border-black/10 ">
-            <span className="font-semibold text-[#111111] ">www.amifresh.in</span>
+          <div className="hidden lg:flex items-center gap-4 mt-8 pt-8 border-t border-black/10 dark:border-white/10">
+            <span className="font-semibold text-[#111111] dark:text-[#F5F5F5]">www.amifresh.in</span>
             <div className="flex gap-2 ml-auto">
               {[Facebook, Instagram, Twitter].map((Icon, i) => (
-                <a key={i} href="#" className="w-8 h-8 rounded-full bg-[#111111]  text-white  flex items-center justify-center hover:bg-[#0F8A3C] :bg-[#22B35A] hover:text-white transition-colors">
+                <a key={i} href="#" className="w-8 h-8 rounded-full bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex items-center justify-center hover:bg-[#0F8A3C] dark:hover:bg-[#22B35A] hover:text-white transition-colors">
                   <Icon size={16} />
                 </a>
               ))}
@@ -319,25 +306,25 @@ export default function RegisterPage() {
 
         {/* RIGHT PANEL - FORM */}
         <div className="w-full lg:w-[62%] p-4 sm:p-6 lg:p-8 xl:p-12 flex items-center justify-center lg:overflow-y-auto h-auto lg:h-screen relative z-10">
-          <div className="w-full max-w-4xl bg-white  rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)]  animate-slide-up flex flex-col max-h-full">
+          <div className="w-full max-w-4xl bg-white dark:bg-[#162A1F] rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-black/40 animate-slide-up flex flex-col max-h-full">
             
             {/* Form Header (Sticky) */}
-            <div className="p-6 md:p-8 border-b border-[#E5E5E5]  sticky top-0 bg-white/95  backdrop-blur-md rounded-t-[24px] z-20">
+            <div className="p-6 md:p-8 border-b border-[#E5E5E5] dark:border-[#2A4D3B] sticky top-0 bg-white/95 dark:bg-[#162A1F]/95 backdrop-blur-md rounded-t-[24px] z-20">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#E7F6EC]  rounded-full flex items-center justify-center text-[#0F8A3C]  flex-shrink-0">
+                <div className="w-12 h-12 bg-[#E7F6EC] dark:bg-[#22B35A]/20 rounded-full flex items-center justify-center text-[#0F8A3C] dark:text-[#22B35A] flex-shrink-0">
                   <Image src="/Leaf.webp" alt="" width={24} height={24} className="opacity-80" />
                 </div>
                 <div>
-                  <h2 className={`${poppins.className} text-2xl font-bold text-[#111111] `}>
-                    Join the Sakhi Family <span className="text-[#0F8A3C] ">🌿</span>
+                  <h2 className={`${poppins.className} text-2xl font-bold text-[#111111] dark:text-[#F5F5F5]`}>
+                    Join the Sakhi Family <span className="text-[#0F8A3C] dark:text-[#22B35A]">🌿</span>
                   </h2>
-                  <p className="text-[#0F8A3C]  font-semibold text-sm mt-1">Start your journey with us</p>
+                  <p className="text-[#0F8A3C] dark:text-[#22B35A] font-semibold text-sm mt-1">Start your journey with us</p>
                 </div>
               </div>
               
               {isSuccess && (
-                <div className="mt-4 p-3 bg-[#E7F6EC]  text-[#0F8A3C]  border border-[#0F8A3C]/20 rounded-xl flex items-center gap-2 font-semibold">
-                  <div className="bg-[#0F8A3C]  text-white rounded-full p-1"><Check size={14} /></div>
+                <div className="mt-4 p-3 bg-[#E7F6EC] dark:bg-[#1C3628] text-[#0F8A3C] dark:text-[#22B35A] border border-[#0F8A3C]/20 rounded-xl flex items-center gap-2 font-semibold">
+                  <div className="bg-[#0F8A3C] dark:bg-[#22B35A] text-white rounded-full p-1"><Check size={14} /></div>
                   Registration successful! 🎉 Redirecting...
                 </div>
               )}
@@ -349,13 +336,13 @@ export default function RegisterPage() {
                 
                 {/* Section 1: Personal Details */}
                 <div>
-                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5]  pb-2">
-                    <User size={18} className="text-[#0F8A3C] " />
-                    <h3 className={`${poppins.className} font-bold text-[#111111] `}>Personal Details</h3>
+                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5] dark:border-[#2A4D3B] pb-2">
+                    <User size={18} className="text-[#0F8A3C] dark:text-[#22B35A]" />
+                    <h3 className={`${poppins.className} font-bold text-[#111111] dark:text-[#F5F5F5]`}>Personal Details</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">First Name <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">First Name <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input {...register('firstName')} type="text" className="input-field w-full" placeholder="Enter first name" />
@@ -363,7 +350,7 @@ export default function RegisterPage() {
                       {errors.firstName && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.firstName.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Last Name <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Last Name <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input {...register('lastName')} type="text" className="input-field w-full" placeholder="Enter last name" />
@@ -371,7 +358,7 @@ export default function RegisterPage() {
                       {errors.lastName && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.lastName.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Date of Birth (18+) <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Date of Birth (18+) <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input {...register('dob')} type="date" className="input-field w-full pr-3" />
@@ -379,19 +366,19 @@ export default function RegisterPage() {
                       {errors.dob && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.dob.message}</p>}
                     </div>
                     <div className="md:col-span-2 lg:col-span-1">
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Father / Spouse Name</label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Father / Spouse Name</label>
                       <div className="relative">
                         <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input {...register('fatherSpouseName')} type="text" className="input-field w-full" placeholder="Optional" />
                       </div>
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-2">Gender <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-2">Gender <span className="text-[#D93025]">*</span></label>
                       <div className="flex gap-3">
                         {['Female', 'Male', 'Other'].map(g => (
                           <label key={g} className="relative cursor-pointer">
                             <input {...register('gender')} type="radio" value={g} className="peer sr-only" />
-                            <div className="px-4 py-2 text-sm rounded-full border-2 border-[#E5E5E5]  text-[#6B6B6B]  peer-checked:border-[#0F8A3C] peer-checked:bg-[#E7F6EC] :bg-[#1C3628] peer-checked:text-[#0F8A3C] :text-[#22B35A] peer-checked:font-bold transition-all">
+                            <div className="px-4 py-2 text-sm rounded-full border-2 border-[#E5E5E5] dark:border-[#2A4D3B] text-[#6B6B6B] dark:text-[#A0AAB2] peer-checked:border-[#0F8A3C] peer-checked:bg-[#E7F6EC] dark:peer-checked:bg-[#1C3628] peer-checked:text-[#0F8A3C] dark:peer-checked:text-[#22B35A] peer-checked:font-bold transition-all">
                               {g}
                             </div>
                           </label>
@@ -403,22 +390,22 @@ export default function RegisterPage() {
 
                 {/* Section 2: Contact Details */}
                 <div>
-                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5]  pb-2">
-                    <Phone size={18} className="text-[#0F8A3C] " />
-                    <h3 className={`${poppins.className} font-bold text-[#111111] `}>Contact Details</h3>
+                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5] dark:border-[#2A4D3B] pb-2">
+                    <Phone size={18} className="text-[#0F8A3C] dark:text-[#22B35A]" />
+                    <h3 className={`${poppins.className} font-bold text-[#111111] dark:text-[#F5F5F5]`}>Contact Details</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Mobile Number <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Mobile Number <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <span className="absolute left-9 top-1/2 -translate-y-1/2 text-sm font-bold text-[#111111]  border-r border-gray-300 pr-2">+91</span>
-                        <input {...register('mobile')} type="tel" maxLength={10} className="input-field w-full !pl-[4.5rem]" placeholder="9876543210" />
+                        <span className="absolute left-9 top-1/2 -translate-y-1/2 text-sm font-bold text-[#111111] dark:text-[#F5F5F5] border-r border-gray-300 pr-2">+91</span>
+                        <input {...register('mobile')} type="tel" maxLength={10} className="input-field w-full pl-[4.5rem]" placeholder="9876543210" />
                       </div>
                       {errors.mobile && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.mobile.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Email Address <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Email Address <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input {...register('email')} type="email" className="input-field w-full" placeholder="example@email.com" />
@@ -430,26 +417,23 @@ export default function RegisterPage() {
 
                 {/* Section 3: Address */}
                 <div>
-                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5]  pb-2">
-                    <MapPin size={18} className="text-[#0F8A3C] " />
-                    <h3 className={`${poppins.className} font-bold text-[#111111] `}>Address Details</h3>
+                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5] dark:border-[#2A4D3B] pb-2">
+                    <MapPin size={18} className="text-[#0F8A3C] dark:text-[#22B35A]" />
+                    <h3 className={`${poppins.className} font-bold text-[#111111] dark:text-[#F5F5F5]`}>Address Details</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-3">
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Full Address <span className="text-[#D93025]">*</span></label>
-                      <div className="relative">
-                        <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
-                        <textarea {...register('address')} rows={2} className="input-field w-full py-2 pl-[2.5rem] resize-none rounded-[12px] leading-tight flex items-center pt-2.5" placeholder="House No, Street, Landmark" />
-                      </div>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Full Address <span className="text-[#D93025]">*</span></label>
+                      <textarea {...register('address')} rows={2} className="input-field w-full py-2 resize-none rounded-[12px]" placeholder="House No, Street, Landmark" />
                       {errors.address && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.address.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">City <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">City <span className="text-[#D93025]">*</span></label>
                       <input {...register('city')} type="text" className="input-field w-full !pl-3" placeholder="City" />
                       {errors.city && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.city.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">State <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">State <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <select {...register('state')} className="input-field w-full !pl-3 appearance-none pr-8">
                           <option value="">Select State</option>
@@ -460,25 +444,20 @@ export default function RegisterPage() {
                       {errors.state && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.state.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Pin Code <span className="text-[#D93025]">*</span></label>
+                      <label className="block text-xs font-semibold text-[#6B6B6B] dark:text-[#A0AAB2] mb-1">Pin Code <span className="text-[#D93025]">*</span></label>
                       <input {...register('pinCode')} type="text" maxLength={6} className="input-field w-full !pl-3" placeholder="000000" />
                       {errors.pinCode && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.pinCode.message}</p>}
-                    </div>
-                    <div className="md:col-span-3">
-                      <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Referral Code (Optional)</label>
-                      <input {...register('referralCode')} type="text" className="input-field w-full !pl-3 uppercase" placeholder="Enter referral code if any" />
-                      {errors.referralCode && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.referralCode.message}</p>}
                     </div>
                   </div>
                 </div>
 
                 {/* Section 4: Documents */}
                 <div>
-                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5]  pb-2">
-                    <FileImage size={18} className="text-[#0F8A3C] " />
-                    <h3 className={`${poppins.className} font-bold text-[#111111] `}>Document Upload <span className="text-[#D93025]">*</span></h3>
+                  <div className="flex items-center gap-2 mb-4 border-b border-[#E5E5E5] dark:border-[#2A4D3B] pb-2">
+                    <FileImage size={18} className="text-[#0F8A3C] dark:text-[#22B35A]" />
+                    <h3 className={`${poppins.className} font-bold text-[#111111] dark:text-[#F5F5F5]`}>Document Upload <span className="text-[#D93025]">*</span></h3>
                   </div>
-                  <p className="text-xs text-[#6B6B6B]  mb-4">Max file size: 5MB per document. Supported: Images, PDF (for PAN/Aadhaar).</p>
+                  <p className="text-xs text-[#6B6B6B] dark:text-[#A0AAB2] mb-4">Max file size: 5MB per document. Supported: Images, PDF (for PAN/Aadhaar).</p>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <DocUploadCard title="Passport Size Photo" field="photo" accept="image/*" mode="user" icon={User} val={photoVal} />
@@ -489,22 +468,22 @@ export default function RegisterPage() {
 
                 {/* Submit Area */}
                 <div className="pt-4">
-                  <div className="flex items-center gap-2 mb-6">
-                    <input id="terms" type="checkbox" {...register('terms')} className="w-4 h-4 rounded border-[#E5E5E5] text-[#0F8A3C] focus:ring-[#FDB94E]" />
-                    <label htmlFor="terms" className="text-sm text-[#6B6B6B]  cursor-pointer leading-tight flex-1">
-                      I agree to the <a href="#" className="text-[#0F8A3C]  font-semibold hover:underline">Terms & Conditions</a> and <a href="#" className="text-[#0F8A3C]  font-semibold hover:underline">Privacy Policy</a>
+                  <div className="flex items-start gap-2 mb-6">
+                    <input id="terms" type="checkbox" {...register('terms')} className="mt-1 w-4 h-4 rounded border-[#E5E5E5] text-[#0F8A3C] focus:ring-[#FDB94E]" />
+                    <label htmlFor="terms" className="text-sm text-[#6B6B6B] dark:text-[#A0AAB2] cursor-pointer leading-tight">
+                      I agree to the <a href="#" className="text-[#0F8A3C] dark:text-[#22B35A] font-semibold hover:underline">Terms & Conditions</a> and <a href="#" className="text-[#0F8A3C] dark:text-[#22B35A] font-semibold hover:underline">Privacy Policy</a>
                     </label>
                   </div>
                   {errors.terms && <p className="text-[#D93025] text-xs -mt-4 mb-4 font-medium">{errors.terms.message}</p>}
 
-                  <button type="submit" disabled={isSubmitting} className="w-full h-[52px] bg-[#0F8A3C]  hover:bg-[#0B6B2E] :bg-[#1C8D46] text-white rounded-full font-bold text-lg flex items-center justify-center transition-all hover:-translate-y-1 shadow-[0_4px_12px_rgba(15,138,60,0.2)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+                  <button type="submit" disabled={isSubmitting} className="w-full h-[52px] bg-[#0F8A3C] dark:bg-[#22B35A] hover:bg-[#0B6B2E] dark:hover:bg-[#1C8D46] text-white rounded-full font-bold text-lg flex items-center justify-center transition-all hover:-translate-y-1 shadow-[0_4px_12px_rgba(15,138,60,0.2)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
                     {isSubmitting ? 'Processing...' : 'Join Sakhi Program'}
                   </button>
 
                   <div className="mt-6 text-center">
-                    <p className="text-[#6B6B6B]  text-sm">
+                    <p className="text-[#6B6B6B] dark:text-[#A0AAB2] text-sm">
                       Already a Sakhi?{' '}
-                      <Link href="/login" className="text-[#0F8A3C]  font-bold hover:underline">
+                      <Link href="/login" className="text-[#0F8A3C] dark:text-[#22B35A] font-bold hover:underline">
                         Login
                       </Link>
                     </p>
@@ -519,28 +498,28 @@ export default function RegisterPage() {
         <div className="flex lg:hidden flex-col items-center gap-4 mt-8 pb-8 w-full z-10">
           <div className="flex gap-3">
             {[Facebook, Instagram, Twitter].map((Icon, i) => (
-              <a key={i} href="#" className="w-10 h-10 rounded-full bg-[#111111]  text-white  flex items-center justify-center">
+              <a key={i} href="#" className="w-10 h-10 rounded-full bg-[#111111] dark:bg-white text-white dark:text-[#111111] flex items-center justify-center">
                 <Icon size={18} />
               </a>
             ))}
           </div>
-          <span className="font-semibold text-[#111111] ">www.amifresh.in</span>
+          <span className="font-semibold text-[#111111] dark:text-[#F5F5F5]">www.amifresh.in</span>
         </div>
       </div>
 
       {/* Webcam Modal for Desktop */}
       {webcamOpen && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white  rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+          <div className="bg-white dark:bg-[#162A1F] rounded-2xl p-6 w-full max-w-lg shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg ">Take Picture</h3>
+              <h3 className="font-bold text-lg dark:text-white">Take Picture</h3>
               <button onClick={closeWebcam} className="text-gray-500 hover:text-red-500"><X size={24} /></button>
             </div>
             <div className="relative bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center">
               <video ref={videoRef} autoPlay playsInline className={`w-full h-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`} />
             </div>
             <div className="mt-6 flex gap-4">
-              <button onClick={closeWebcam} className="flex-1 py-3 font-semibold rounded-xl bg-gray-100  text-gray-700 ">Cancel</button>
+              <button onClick={closeWebcam} className="flex-1 py-3 font-semibold rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">Cancel</button>
               <button onClick={capturePhoto} className="flex-1 py-3 font-bold rounded-xl bg-[#0F8A3C] text-white flex items-center justify-center gap-2 shadow-lg">
                 <Camera size={20} /> Capture
               </button>

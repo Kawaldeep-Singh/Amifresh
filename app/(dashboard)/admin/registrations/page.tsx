@@ -11,6 +11,8 @@ export default function RegistrationsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('PENDING');
 
+  const [credentials, setCredentials] = useState<{loginId: string, tempPassword: string} | null>(null);
+
   const fetchRequests = async (status: string) => {
     try {
       const res = await fetch(`/api/registrations?status=${status}`);
@@ -62,13 +64,30 @@ export default function RegistrationsPage() {
       
       if (!res.ok) throw new Error(data.error);
       
-      alert(data.message);
+      if (data.credentials) {
+        setCredentials(data.credentials);
+      } else {
+        alert(data.message);
+      }
       fetchRequests(statusFilter);
     } catch (err: any) {
       alert(err.message || `Failed to ${action.toLowerCase()} registration`);
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const copyCredentials = () => {
+    if (!credentials) return;
+    const text = `Welcome to AmiFresh!\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
+    navigator.clipboard.writeText(text);
+    alert('Credentials copied to clipboard!');
+  };
+
+  const shareWhatsApp = () => {
+    if (!credentials) return;
+    const text = `Welcome to AmiFresh!\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
@@ -112,19 +131,19 @@ export default function RegistrationsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-primary-light">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referrer</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date / Status</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Applicant</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Contact</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Referrer</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Date / Status</th>
                   {statusFilter === 'PENDING' && (
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-primary-dark uppercase tracking-wider">Actions</th>
                   )}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-border">
                 {requests.map((req) => (
                   <tr key={req._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -182,6 +201,40 @@ export default function RegistrationsPage() {
           </div>
         )}
       </div>
+
+      {credentials && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Registration Approved</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              The user has been approved. Please share their login credentials with them safely.
+            </p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3 mb-6">
+              <div>
+                <span className="text-xs text-gray-500 font-medium uppercase">Login ID</span>
+                <div className="font-mono text-lg font-bold text-gray-900">{credentials.loginId}</div>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500 font-medium uppercase">Temporary Password</span>
+                <div className="font-mono text-lg font-bold text-gray-900">{credentials.tempPassword}</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Button onClick={copyCredentials} className="w-full" variant="outline">
+                Copy to Clipboard
+              </Button>
+              <Button onClick={shareWhatsApp} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                Share via WhatsApp
+              </Button>
+              <Button onClick={() => setCredentials(null)} className="w-full" variant="ghost">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

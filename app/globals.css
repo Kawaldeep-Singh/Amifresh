@@ -1,21 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #2E7D32;        /* main buttons, active menu, links */
-  --primary-dark: #1B5E20;   /* hover states */
-  --primary-light: #E8F5E9;  /* light green backgrounds, table headers, selected rows */
-  --accent: #E65100;         /* warm spice orange for highlights and key CTAs */
-  --accent-light: #FFF3E0;
-  --bg: #FAFAF7;             /* page background */
-  --surface: #FFFFFF;        /* cards, tables, modals */
-  --text: #1F2A1F;           /* main text */
-  --text-muted: #6B7280;     /* secondary text */
-  --border: #E5E7EB;
-  --success: #2E7D32;
-  --warning: #F9A825;
-  --danger: #D32F2F;
-  --sidebar-bg: #1B2A1B;     /* dark green sidebar */
-  --sidebar-text: #E8F5E9;
+  --primary: #0F8A3C;
+  /* Sakhi primary green */
+  --primary-dark: #0B6B2E;
+  /* Sakhi dark green */
+  --primary-light: #E7F6EC;
+  /* Light green backgrounds */
+  --accent: #FDB94E;
+  /* Sakhi yellow/orange */
+  --accent-light: #FFE3A8;
+  --bg: #FFF5E4;
+  /* Warm cream page background */
+  --surface: #FFFFFF;
+  /* Cards, tables, modals */
+  --text: #111111;
+  /* Main text */
+  --text-muted: #6B6B6B;
+  /* Secondary text */
+  --border: #E5E5E5;
+  --success: #0F8A3C;
+  --warning: #FDB94E;
+  --danger: #D93025;
+  --sidebar-bg: #FFFFFF;
+  /* White sidebar */
+  --sidebar-text: #6B6B6B;
 }
 
 @theme inline {
@@ -31,11 +40,11 @@
   --color-brand-border: var(--border);
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text);
-  
+
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
-  
+
   --font-sans: var(--font-poppins), Arial, Helvetica, sans-serif;
 }
 

@@ -82,32 +82,32 @@ export function GlobalSearch() {
       />
 
       {isOpen && query.trim().length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-lg shadow-xl border border-border overflow-hidden z-50 max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
+            <div className="p-4 text-center text-sm text-text-muted">Searching...</div>
           ) : results.length > 0 ? (
             <div className="py-2">
               {results.map((result, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSelect(result.href)}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
+                  className="w-full text-left px-4 py-3 hover:bg-bg flex items-center gap-3 transition-colors border-b border-border last:border-0"
                 >
-                  <div className={`p-2 rounded-full ${result.type === 'route' ? 'bg-blue-50 text-blue-500' : 'bg-green-50 text-green-500'}`}>
+                  <div className={`p-2 rounded-full ${result.type === 'route' ? 'bg-primary-light text-primary' : 'bg-primary-light text-primary'}`}>
                     {result.type === 'route' ? <FileText size={16} /> : <User size={16} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{result.title}</p>
+                    <p className="text-sm font-semibold text-text-main truncate">{result.title}</p>
                     {result.subtitle && (
-                      <p className="text-xs text-gray-500 truncate">{result.subtitle}</p>
+                      <p className="text-xs text-text-muted truncate">{result.subtitle}</p>
                     )}
                   </div>
-                  <ChevronRight size={16} className="text-gray-400" />
+                  <ChevronRight size={16} className="text-text-muted" />
                 </button>
               ))}
             </div>
           ) : (
-            <div className="p-4 text-center text-sm text-gray-500">
+            <div className="p-4 text-center text-sm text-text-muted">
               No results found for "{query}"
             </div>
           )}

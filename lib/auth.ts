@@ -9,20 +9,25 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        loginId: { label: 'Login ID', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please provide both email and password');
+        if (!credentials?.loginId || !credentials?.password) {
+          throw new Error('Please provide both login ID and password');
         }
 
         await dbConnect();
 
-        const user = await User.findOne({ email: credentials.email }).select('+password');
+        const user = await User.findOne({ 
+          $or: [
+            { email: credentials.loginId },
+            { loginId: credentials.loginId }
+          ]
+        }).select('+password +mustChangePassword');
 
         if (!user) {
-          throw new Error('Invalid email or password');
+          throw new Error('Invalid login ID or password');
         }
 
         if (user.status === 'BLOCKED') {
@@ -44,7 +49,7 @@ export const authOptions: NextAuthOptions = {
         const isPasswordMatch = await verifyPassword(credentials.password, user.password!);
 
         if (!isPasswordMatch) {
-          throw new Error('Invalid email or password');
+          throw new Error('Invalid login ID or password');
         }
 
         return {
@@ -54,6 +59,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           status: user.status,
           referralCode: user.referralCode,
+          mustChangePassword: user.mustChangePassword,
         };
       },
     }),
@@ -65,6 +71,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.status = user.status;
         token.referralCode = user.referralCode;
+        token.mustChangePassword = (user as any).mustChangePassword;
       }
       return token;
     },
@@ -74,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.status = token.status;
         session.user.referralCode = token.referralCode;
+        session.user.mustChangePassword = token.mustChangePassword;
       }
       return session;
     },

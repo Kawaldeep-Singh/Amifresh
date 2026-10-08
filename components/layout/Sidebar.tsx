@@ -63,12 +63,12 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-sidebar-bg text-sidebar-text border-r border-primary-dark transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-sidebar-bg text-sidebar-text border-r border-border transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-4 border-b border-primary-dark">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-border">
           <Link href={role === UserRole.ROOT_ADMIN ? '/admin/dashboard' : role === UserRole.MANAGER ? '/manager/dashboard' : '/member/dashboard'} className="flex items-center">
-            <Image src="/Logo.webp" alt="Amifresh Logo" width={140} height={40} className="object-contain" />
+            <Image src="/Amifresh%20logo%20Light%20theam.webp" alt="Amifresh Logo" width={140} height={40} className="object-contain" />
           </Link>
           <button 
             className="lg:hidden p-2 text-sidebar-text hover:text-white rounded-md"
@@ -88,15 +88,15 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all mb-1 ${
                     isActive
-                      ? 'bg-primary text-white'
-                      : 'text-sidebar-text hover:bg-primary-dark hover:text-white'
+                      ? 'bg-primary text-white shadow-[0_4px_12px_rgba(15,138,60,0.2)]'
+                      : 'text-text-muted hover:bg-primary-light hover:text-primary'
                   }`}
                 >
                   <Icon
-                    className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                      isActive ? 'text-white' : 'text-primary-light group-hover:text-white'
+                    className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
+                      isActive ? 'text-white' : 'text-text-muted group-hover:text-primary'
                     }`}
                     aria-hidden="true"
                   />
@@ -106,12 +106,12 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
             })}
           </nav>
         </div>
-        <div className="flex-shrink-0 flex border-t border-primary-dark p-4">
+        <div className="flex-shrink-0 flex border-t border-border p-4">
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex-shrink-0 group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-sidebar-text hover:bg-danger hover:text-white transition-colors"
+            className="flex-shrink-0 group w-full flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl text-text-muted hover:bg-danger/10 hover:text-danger transition-colors"
           >
-            <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-primary-light group-hover:text-white" aria-hidden="true" />
+            <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-text-muted group-hover:text-danger" aria-hidden="true" />
             Sign out
           </button>
         </div>

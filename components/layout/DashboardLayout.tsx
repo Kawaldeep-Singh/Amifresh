@@ -23,6 +23,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return null; // or redirect, though middleware handles it
   }
 
+  if (session.user.mustChangePassword) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/change-password';
+    }
+    return null;
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-bg">
       <Sidebar 

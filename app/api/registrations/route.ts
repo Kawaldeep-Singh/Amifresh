@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const url = req.url;
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session || session.user.role !== UserRole.ROOT_ADMIN) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     const status = searchParams.get('status') || 'PENDING';
 
     await dbConnect();
-    
+
     // Fetch registrations matching the status
     const requests = await RegistrationRequest.find({ status })
       .populate('referrer', 'name email referralCode')
