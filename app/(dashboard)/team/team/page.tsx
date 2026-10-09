@@ -4,23 +4,23 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { UserRole } from '@/types/user';
 import connectDB from '@/lib/mongodb';
-import { getManagerTeam, getManagerTeamStats } from '@/services/team.service';
+import { getTeamTeam, getTeamTeamStats } from '@/services/team.service';
 import Link from 'next/link';
 import { Search, Filter, Eye, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
-  title: 'My Team | Amifresh Manager',
+  title: 'My Team | Amifresh Team',
 };
 
-export default async function ManagerTeamPage({
+export default async function TeamTeamPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== UserRole.MANAGER) {
+  if (!session || session.user.role !== UserRole.TEAM) {
     redirect('/login');
   }
 
@@ -33,8 +33,8 @@ export default async function ManagerTeamPage({
   const status = typeof resolvedParams.status === 'string' ? resolvedParams.status : undefined;
 
   const [{ team, totalPages, total }, stats] = await Promise.all([
-    getManagerTeam({ managerId: session.user.id, page, limit, search, role, status }),
-    getManagerTeamStats(session.user.id)
+    getTeamTeam({ teamId: session.user.id, page, limit, search, role, status }),
+    getTeamTeamStats(session.user.id)
   ]);
 
   return (
@@ -57,7 +57,7 @@ export default async function ManagerTeamPage({
           <div className="text-2xl font-bold">{stats.total}</div>
         </div>
         <div className="bg-white p-4 rounded-xl border shadow-sm">
-          <div className="text-sm text-gray-500">Active Members</div>
+          <div className="text-sm text-gray-500">Active Sakhis</div>
           <div className="text-2xl font-bold text-green-600">{stats.active}</div>
         </div>
         <div className="bg-white p-4 rounded-xl border shadow-sm">
@@ -72,7 +72,7 @@ export default async function ManagerTeamPage({
 
       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-4">
-          <form action="/manager/team" method="GET" className="flex-1 flex flex-col sm:flex-row gap-2">
+          <form action="/team/team" method="GET" className="flex-1 flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
@@ -89,8 +89,8 @@ export default async function ManagerTeamPage({
               className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary bg-white outline-none"
             >
               <option value="">All Roles</option>
-              <option value="MANAGER">Manager</option>
-              <option value="MEMBER">Member</option>
+              <option value="TEAM">Team</option>
+              <option value="SAKHI">Sakhi</option>
             </select>
             <select 
               name="status" 
@@ -104,7 +104,7 @@ export default async function ManagerTeamPage({
             </select>
             <Button type="submit" className="py-2">Filter</Button>
             {(search || role || status) && (
-              <Link href="/manager/team" className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border rounded-lg bg-white inline-flex items-center justify-center">
+              <Link href="/team/team" className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border rounded-lg bg-white inline-flex items-center justify-center">
                 Clear
               </Link>
             )}
@@ -115,7 +115,7 @@ export default async function ManagerTeamPage({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakhi</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role & Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referral Info</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
@@ -125,7 +125,7 @@ export default async function ManagerTeamPage({
               {team.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No team members found matching your criteria.
+                    No team sakhis found matching your criteria.
                   </td>
                 </tr>
               ) : team.map((user: any) => (
@@ -164,12 +164,12 @@ export default async function ManagerTeamPage({
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span> ({total} team members)
+              Showing page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span> ({total} team sakhis)
             </div>
             <div className="flex gap-2">
               {page > 1 && (
                 <Link 
-                  href={`/manager/team?page=${page - 1}${search ? `&search=${search}` : ''}${role ? `&role=${role}` : ''}${status ? `&status=${status}` : ''}`}
+                  href={`/team/team?page=${page - 1}${search ? `&search=${search}` : ''}${role ? `&role=${role}` : ''}${status ? `&status=${status}` : ''}`}
                   className="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50"
                 >
                   Previous
@@ -177,7 +177,7 @@ export default async function ManagerTeamPage({
               )}
               {page < totalPages && (
                 <Link 
-                  href={`/manager/team?page=${page + 1}${search ? `&search=${search}` : ''}${role ? `&role=${role}` : ''}${status ? `&status=${status}` : ''}`}
+                  href={`/team/team?page=${page + 1}${search ? `&search=${search}` : ''}${role ? `&role=${role}` : ''}${status ? `&status=${status}` : ''}`}
                   className="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50"
                 >
                   Next

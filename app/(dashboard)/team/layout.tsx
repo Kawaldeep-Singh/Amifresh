@@ -4,7 +4,9 @@ import { redirect, notFound } from 'next/navigation';
 import { UserRole } from '@/types/user';
 import { connection } from 'next/server';
 
-export default async function ManagerLayout({ children }: { children: React.ReactNode }) {
+export const instant = false;
+
+export default async function TeamLayout({ children }: { children: React.ReactNode }) {
   await connection();
   const session = await getServerSession(authOptions);
 
@@ -12,7 +14,7 @@ export default async function ManagerLayout({ children }: { children: React.Reac
     redirect('/login');
   }
 
-  if (session.user.role !== UserRole.MANAGER && session.user.role !== UserRole.ROOT_ADMIN) {
+  if (session.user.role !== UserRole.TEAM && session.user.role !== UserRole.ROOT_ADMIN) {
     notFound();
   }
 

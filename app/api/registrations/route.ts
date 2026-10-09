@@ -21,9 +21,8 @@ export async function GET(req: Request) {
     await dbConnect();
 
     // Fetch registrations matching the status
-    const requests = await RegistrationRequest.find({ status })
-      .populate('referrer', 'name email referralCode')
-      .populate('reviewedBy', 'name email')
+    const requests = await User.find({ status })
+      .populate('referredBy', 'name email referralCode')
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ requests });

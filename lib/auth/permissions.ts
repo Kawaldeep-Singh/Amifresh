@@ -1,8 +1,8 @@
 import { UserRole } from '@/types/user';
 
 export type Permission = 
-  | 'manage_managers'
-  | 'manage_members'
+  | 'manage_teams'
+  | 'manage_sakhis'
   | 'manage_products'
   | 'manage_orders'
   | 'manage_commissions'
@@ -10,7 +10,7 @@ export type Permission =
   | 'view_audit_logs'
   | 'manage_referrals'
   | 'review_registrations'
-  | 'view_members'
+  | 'view_sakhis'
   | 'view_referrals'
   | 'view_own_profile'
   | 'view_own_referrals'
@@ -19,8 +19,8 @@ export type Permission =
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ROOT_ADMIN: [
-    'manage_managers',
-    'manage_members',
+    'manage_teams',
+    'manage_sakhis',
     'manage_products',
     'manage_orders',
     'manage_commissions',
@@ -28,16 +28,16 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_audit_logs',
     'manage_referrals',
     'review_registrations',
-    'view_members',
+    'view_sakhis',
     'view_referrals',
     'view_own_profile',
     'view_own_referrals',
     'view_own_sales',
     'view_own_commissions',
   ],
-  MANAGER: [
-    'manage_members',
-    'view_members',
+  TEAM: [
+    'manage_sakhis',
+    'view_sakhis',
     'view_referrals',
     'review_registrations',
     'view_own_profile',
@@ -45,7 +45,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'view_own_sales',
     'view_own_commissions',
   ],
-  MEMBER: [
+  SAKHI: [
     'view_own_profile',
     'view_own_referrals',
     'view_own_sales',

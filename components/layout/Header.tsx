@@ -20,7 +20,7 @@ export function Header({ session, onMenuClick }: HeaderProps) {
           <Menu className="h-6 w-6" aria-hidden="true" />
         </button>
         
-        <div className="hidden lg:flex flex-1 items-center max-w-md ml-4">
+        <div className="flex flex-1 items-center max-w-md ml-4">
           <GlobalSearch />
         </div>
       </div>

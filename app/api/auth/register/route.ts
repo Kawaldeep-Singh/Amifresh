@@ -16,7 +16,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
     }
     
-    const { name, email, phone, referralCode } = result.data;
+    const { 
+      name, email, phone, referralCode, 
+      dob, gender, address, city, state, pinCode, fatherSpouseName,
+      photo, panCard, aadhaarCard
+    } = result.data;
     
     await dbConnect();
 
@@ -24,15 +28,6 @@ export async function POST(req: Request) {
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existingUser) {
       return NextResponse.json({ error: 'An account with this email or phone already exists.' }, { status: 400 });
-    }
-
-    // Check for pending registration
-    const existingPending = await RegistrationRequest.findOne({
-      $or: [{ email }, { phone }],
-      status: RegistrationStatus.PENDING
-    });
-    if (existingPending) {
-      return NextResponse.json({ error: 'Your registration request is already under review.' }, { status: 400 });
     }
 
     // Verify referral code if provided
@@ -45,14 +40,29 @@ export async function POST(req: Request) {
       referrerId = referrer._id;
     }
 
-    // Create Registration Request for Admin Approval
-    await RegistrationRequest.create({
+    // Generate a final referral code immediately
+    const { generateUniqueReferralCode } = await import('@/services/referral.service');
+    const newReferralCode = await generateUniqueReferralCode(name);
+
+    // Create User directly with PENDING status
+    await User.create({
       name,
       email,
       phone,
-      referralCode,
-      referrer: referrerId,
-      status: RegistrationStatus.PENDING,
+      referralCode: newReferralCode,
+      referredBy: referrerId,
+      status: 'PENDING',
+      role: 'SAKHI',
+      dob,
+      gender,
+      address,
+      city,
+      state,
+      pinCode,
+      fatherSpouseName,
+      photo,
+      panCard,
+      aadhaarCard,
     });
 
     return NextResponse.json({

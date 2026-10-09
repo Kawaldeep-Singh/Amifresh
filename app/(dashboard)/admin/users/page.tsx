@@ -49,7 +49,7 @@ export default async function AdminUsersPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Link href="/admin/users" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
           <div className="text-sm text-gray-500 group-hover:text-primary-dark">Total Users</div>
           <div className="text-2xl font-extrabold text-gray-900">{stats.total}</div>
@@ -58,13 +58,13 @@ export default async function AdminUsersPage({
           <div className="text-sm text-gray-500 group-hover:text-primary-dark">Active</div>
           <div className="text-2xl font-extrabold text-primary">{stats.active}</div>
         </Link>
-        <Link href="/admin/users?role=MANAGER" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
-          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Managers</div>
-          <div className="text-2xl font-extrabold text-accent">{stats.managers}</div>
+        <Link href="/admin/users?role=TEAM" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Teams</div>
+          <div className="text-2xl font-extrabold text-accent">{stats.teams}</div>
         </Link>
-        <Link href="/admin/users?role=MEMBER" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
-          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Members</div>
-          <div className="text-2xl font-extrabold text-primary-dark">{stats.members}</div>
+        <Link href="/admin/users?role=SAKHI" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Sakhis</div>
+          <div className="text-2xl font-extrabold text-primary-dark">{stats.sakhis}</div>
         </Link>
         <Link href="/admin/users?status=BLOCKED" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-danger hover:bg-red-50 transition-all hover:shadow-md cursor-pointer block group">
           <div className="text-sm text-gray-500 group-hover:text-danger">Blocked</div>
@@ -73,6 +73,10 @@ export default async function AdminUsersPage({
         <Link href="/admin/users?status=INACTIVE" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-gray-50 transition-all hover:shadow-md cursor-pointer block group">
           <div className="text-sm text-gray-500 group-hover:text-gray-700">Inactive</div>
           <div className="text-2xl font-extrabold text-gray-600">{stats.inactive}</div>
+        </Link>
+        <Link href="/admin/registrations" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-accent hover:bg-orange-50 transition-all hover:shadow-md cursor-pointer block group">
+          <div className="text-sm text-gray-500 group-hover:text-accent">Pending</div>
+          <div className="text-2xl font-extrabold text-orange-500">{stats.pending}</div>
         </Link>
       </div>
 
@@ -96,8 +100,8 @@ export default async function AdminUsersPage({
             >
               <option value="">All Roles</option>
               <option value="ROOT_ADMIN">Root Admin</option>
-              <option value="MANAGER">Manager</option>
-              <option value="MEMBER">Member</option>
+              <option value="TEAM">Team</option>
+              <option value="SAKHI">Sakhi</option>
             </select>
             <select 
               name="status" 

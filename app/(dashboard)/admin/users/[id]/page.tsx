@@ -9,6 +9,7 @@ import { getDirectReferrals } from '@/services/referral.service';
 import Link from 'next/link';
 import { ArrowLeft, User, Shield, Network, Calendar, Phone, Mail } from 'lucide-react';
 import StatusButtons from './StatusButtons';
+import NetworkTreeViewer from '@/components/network/NetworkTreeViewer';
 
 export const metadata: Metadata = {
   title: 'User Details | Amifresh Admin',
@@ -111,6 +112,76 @@ export default async function AdminUserDetailsPage({
       </div>
 
       {/* Grid Content */}
+      
+      {/* Bio Data Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Personal Details */}
+        <div className="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-bold flex items-center gap-2 mb-6 text-gray-800 border-b pb-2">
+            <User size={20} className="text-primary" />
+            Personal Details
+          </h3>
+          <dl className="space-y-4">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Name</dt>
+              <dd className="mt-1 text-sm text-gray-900 font-medium">{user.name || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Father/Spouse Name</dt>
+              <dd className="mt-1 text-sm text-gray-900">{user.fatherSpouseName || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
+              <dd className="mt-1 text-sm text-gray-900">{user.dob || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Gender</dt>
+              <dd className="mt-1 text-sm text-gray-900">{user.gender || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Address</dt>
+              <dd className="mt-1 text-sm text-gray-900">
+                {user.address ? `${user.address}, ${user.city || ''}, ${user.state || ''} - ${user.pinCode || ''}` : 'N/A'}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        {/* Identity & Account */}
+        <div className="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-bold flex items-center gap-2 mb-6 text-gray-800 border-b pb-2">
+            <Shield size={20} className="text-primary" />
+            Identity & Account
+          </h3>
+          <dl className="space-y-4">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Email</dt>
+              <dd className="mt-1 text-sm text-gray-900">{user.email || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Phone</dt>
+              <dd className="mt-1 text-sm text-gray-900">{user.phone || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">PAN Card Number</dt>
+              <dd className="mt-1 text-sm text-gray-900 font-mono uppercase">{user.panCard || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Aadhaar Card Number</dt>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{user.aadhaarCard || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Account Status</dt>
+              <dd className="mt-1 text-sm text-gray-900 flex items-center gap-2">
+                <span className={`px-2 py-0.5 inline-flex text-xs font-semibold rounded-full border ${getStatusColor(user.status)}`}>
+                  {user.status}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column: Stats & Meta */}
@@ -220,6 +291,17 @@ export default async function AdminUserDetailsPage({
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Full Network Tree */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="bg-white p-6 rounded-2xl border shadow-sm">
+            <h3 className="text-lg font-bold flex items-center gap-2 mb-6 text-gray-800">
+              <Network size={20} className="text-primary" />
+              Network Tree
+            </h3>
+            <NetworkTreeViewer userId={user._id.toString()} />
           </div>
         </div>
 

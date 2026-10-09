@@ -1,7 +1,7 @@
 export enum UserRole {
   ROOT_ADMIN = 'ROOT_ADMIN',
-  MANAGER = 'MANAGER',
-  MEMBER = 'MEMBER',
+  TEAM = 'TEAM',
+  SAKHI = 'SAKHI',
 }
 
 export enum UserStatus {

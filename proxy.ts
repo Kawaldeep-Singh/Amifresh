@@ -14,7 +14,7 @@ export default withAuth(
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    if (path.startsWith('/manager') && token.role !== 'MANAGER' && token.role !== 'ROOT_ADMIN') {
+    if (path.startsWith('/team') && token.role !== 'TEAM' && token.role !== 'ROOT_ADMIN') {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
@@ -28,5 +28,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/admin/:path*', '/manager/:path*', '/member/:path*'],
+  matcher: ['/admin/:path*', '/team/:path*', '/sakhi/:path*'],
 };

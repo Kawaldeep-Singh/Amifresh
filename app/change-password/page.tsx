@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -20,6 +21,7 @@ type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [serverError, setServerError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -50,9 +52,25 @@ export default function ChangePasswordPage() {
       }
 
       setSuccess('Password changed successfully! Redirecting...');
-      setTimeout(() => {
+      
+      // Update the session explicitly
+      await update({ mustChangePassword: false });
+
+      setTimeout(async () => {
+        const { getSession } = await import('next-auth/react');
+        const session = await getSession();
+        
+        let target = '/dashboard';
+        if (session?.user?.role === 'ROOT_ADMIN') {
+          target = '/admin/dashboard';
+        } else if (session?.user?.role === 'TEAM') {
+          target = '/team/dashboard';
+        } else if (session?.user?.role === 'SAKHI') {
+          target = '/sakhi/dashboard';
+        }
+        
         // Force reload to update session state
-        window.location.href = '/dashboard';
+        window.location.href = target;
       }, 2000);
     } catch (err) {
       setServerError('An unexpected error occurred. Please try again.');

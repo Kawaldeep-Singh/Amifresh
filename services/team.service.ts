@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import User, { IUser, UserRole, UserStatus } from '@/models/User';
 
-export async function getManagerDownlineIds(managerId: string): Promise<string[]> {
+export async function getTeamDownlineIds(teamId: string): Promise<string[]> {
   const result = await User.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(managerId) } },
+    { $match: { _id: new mongoose.Types.ObjectId(teamId) } },
     {
       $graphLookup: {
         from: 'users',
@@ -21,7 +21,7 @@ export async function getManagerDownlineIds(managerId: string): Promise<string[]
 }
 
 export interface GetTeamParams {
-  managerId: string;
+  teamId: string;
   page?: number;
   limit?: number;
   search?: string;
@@ -29,10 +29,10 @@ export interface GetTeamParams {
   status?: string;
 }
 
-export async function getManagerTeam(params: GetTeamParams) {
-  const { managerId, page = 1, limit = 10, search, role, status } = params;
+export async function getTeamTeam(params: GetTeamParams) {
+  const { teamId, page = 1, limit = 10, search, role, status } = params;
   
-  const downlineIds = await getManagerDownlineIds(managerId);
+  const downlineIds = await getTeamDownlineIds(teamId);
   
   if (downlineIds.length === 0) {
     return { team: [], total: 0, page, totalPages: 0 };
@@ -96,8 +96,8 @@ export async function getManagerTeam(params: GetTeamParams) {
   };
 }
 
-export async function getManagerTeamStats(managerId: string) {
-  const downlineIds = await getManagerDownlineIds(managerId);
+export async function getTeamTeamStats(teamId: string) {
+  const downlineIds = await getTeamDownlineIds(teamId);
   
   if (downlineIds.length === 0) {
     return { total: 0, active: 0, inactive: 0, directReferrals: 0 };
@@ -109,7 +109,7 @@ export async function getManagerTeamStats(managerId: string) {
     User.countDocuments({ _id: { $in: objectIds } }),
     User.countDocuments({ _id: { $in: objectIds }, status: UserStatus.ACTIVE }),
     User.countDocuments({ _id: { $in: objectIds }, status: { $ne: UserStatus.ACTIVE } }),
-    User.countDocuments({ referredBy: new mongoose.Types.ObjectId(managerId) })
+    User.countDocuments({ referredBy: new mongoose.Types.ObjectId(teamId) })
   ]);
   
   return { total, active, inactive, directReferrals };

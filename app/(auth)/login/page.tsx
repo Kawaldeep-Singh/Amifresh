@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import {
   User, Lock, Eye, EyeOff
 } from 'lucide-react';
@@ -66,7 +66,16 @@ export default function LoginPage() {
       if (res?.error) {
         setErrorMsg(res.error);
       } else {
-        router.push('/dashboard');
+        const session = await getSession();
+        if (session?.user?.role === 'ROOT_ADMIN') {
+          router.push('/admin/dashboard');
+        } else if (session?.user?.role === 'TEAM') {
+          router.push('/team/dashboard');
+        } else if (session?.user?.role === 'SAKHI') {
+          router.push('/sakhi/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
         router.refresh();
       }
     } catch (error) {

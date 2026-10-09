@@ -47,9 +47,7 @@ const registerSchema = z.object({
   pan: z.any().refine((val) => val, 'Required'),
   aadhaar: z.any().refine((val) => val, 'Required'),
   referralCode: z.string().optional(),
-  terms: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to T&C' }),
-  }),
+  terms: z.boolean().refine((val) => val === true, 'You must agree to T&C'),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -90,6 +88,7 @@ export default function RegisterPage() {
     control,
     setValue,
     watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -101,15 +100,62 @@ export default function RegisterPage() {
   const photoVal = watch('photo');
   const panVal = watch('pan');
   const aadhaarVal = watch('aadhaar');
+  const referralCodeVal = watch('referralCode');
+
+  const [referrerInfo, setReferrerInfo] = useState<{name: string} | null>(null);
+  const [isVerifyingReferral, setIsVerifyingReferral] = useState(false);
+  const [referralError, setReferralError] = useState('');
+
+  useEffect(() => {
+    if (!referralCodeVal || referralCodeVal.trim().length === 0) {
+      setReferrerInfo(null);
+      setReferralError('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsVerifyingReferral(true);
+      setReferrerInfo(null);
+      setReferralError('');
+      try {
+        const res = await fetch(`/api/referrals/validate?code=${encodeURIComponent(referralCodeVal)}`);
+        const data = await res.json();
+        if (res.ok && data.referrer) {
+          setReferrerInfo({ name: data.referrer.name });
+        } else {
+          setReferralError(data.error || 'Invalid referral code');
+        }
+      } catch (err) {
+        setReferralError('Failed to verify code');
+      } finally {
+        setIsVerifyingReferral(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [referralCodeVal]);
+
+  const fileToBase64 = (file: File | undefined | null): Promise<string | undefined> => {
+    if (!file) return Promise.resolve(undefined);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
+      const photoBase64 = await fileToBase64(data.photo as File | undefined);
+      const panBase64 = await fileToBase64(data.pan as File | undefined);
+      const aadhaarBase64 = await fileToBase64(data.aadhaar as File | undefined);
+
       const payload = {
         name: `${data.firstName} ${data.lastName}`.trim(),
         email: data.email,
         phone: data.mobile,
         referralCode: data.referralCode,
-        // The other fields can be added to the payload as needed
         dob: data.dob,
         gender: data.gender,
         address: data.address,
@@ -117,6 +163,9 @@ export default function RegisterPage() {
         state: data.state,
         pinCode: data.pinCode,
         fatherSpouseName: data.fatherSpouseName,
+        photo: photoBase64,
+        panCard: panBase64,
+        aadhaarCard: aadhaarBase64,
       };
 
       const res = await fetch('/api/auth/register', {
@@ -134,9 +183,7 @@ export default function RegisterPage() {
       }
 
       setIsSuccess(true);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      reset();
     } catch (error) {
       alert('An error occurred');
     }
@@ -466,8 +513,17 @@ export default function RegisterPage() {
                     </div>
                     <div className="md:col-span-3">
                       <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Referral Code (Optional)</label>
-                      <input {...register('referralCode')} type="text" className="input-field w-full !pl-3 uppercase" placeholder="Enter referral code if any" />
+                      <div className="relative">
+                        <input {...register('referralCode')} type="text" className="input-field w-full !pl-3 uppercase pr-10" placeholder="Enter referral code if any" />
+                        {isVerifyingReferral && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                          </div>
+                        )}
+                      </div>
                       {errors.referralCode && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.referralCode.message}</p>}
+                      {!errors.referralCode && referralError && <p className="text-[#D93025] text-xs mt-1 font-medium">{referralError}</p>}
+                      {!errors.referralCode && referrerInfo && <p className="text-[#0F8A3C] text-xs mt-1 font-medium">Referred by: {referrerInfo.name}</p>}
                     </div>
                   </div>
                 </div>
@@ -545,6 +601,33 @@ export default function RegisterPage() {
                 <Camera size={20} /> Capture
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {isSuccess && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl text-center relative">
+            <button 
+              onClick={() => setIsSuccess(false)} 
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+            <div className="w-16 h-16 bg-[#0F8A3C]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check size={32} className="text-[#0F8A3C]" />
+            </div>
+            <h3 className="font-bold text-xl mb-2 text-gray-900">Application Submitted!</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Your registration request has been successfully sent. Your documents are currently <span className="font-semibold text-amber-600">Pending Verification</span>. We will notify you once your account is approved.
+            </p>
+            <button 
+              onClick={() => setIsSuccess(false)}
+              className="w-full py-3 font-bold rounded-xl bg-[#0F8A3C] text-white flex items-center justify-center shadow-lg hover:-translate-y-1 transition-all"
+            >
+              Okay
+            </button>
           </div>
         </div>
       )}

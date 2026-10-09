@@ -2,17 +2,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Users, ShoppingCart, IndianRupee, Activity } from 'lucide-react';
-import { getMemberDashboardStats } from '@/services/dashboard.service';
+import { getSakhiDashboardStats } from '@/services/dashboard.service';
 import ReferralLink from '@/components/dashboard/ReferralLink';
 
-export default async function MemberDashboard() {
+export default async function SakhiDashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
     redirect('/login');
   }
 
-  const stats = await getMemberDashboardStats(session.user.id);
+  const stats = await getSakhiDashboardStats(session.user.id);
 
   return (
     <div className="mb-8">

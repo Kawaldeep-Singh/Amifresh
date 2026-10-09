@@ -62,13 +62,13 @@ export function GlobalSearch() {
   };
 
   return (
-    <div ref={wrapperRef} className="w-full max-w-md relative text-text-muted focus-within:text-text-main">
+    <div ref={wrapperRef} className="w-full max-w-md relative text-gray-400 focus-within:text-primary">
       <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-3">
         <Search className="h-5 w-5" aria-hidden="true" />
       </div>
       <input
         id="search"
-        className="block w-full h-full pl-10 pr-3 py-2 border-transparent text-text-main placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm bg-bg rounded-md transition-all"
+        className="block w-full h-full pl-10 pr-3 py-2 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-gray-50 hover:bg-white focus:bg-white rounded-lg shadow-sm transition-all"
         placeholder="Search users, orders, or pages..."
         type="search"
         value={query}

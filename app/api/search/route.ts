@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     // 1. Static Routes Search
     const routes = [];
     const rolePrefix = session.user.role === UserRole.ROOT_ADMIN ? '/admin' : 
-                       session.user.role === UserRole.MANAGER ? '/manager' : '/member';
+                       session.user.role === UserRole.TEAM ? '/team' : '/sakhi';
 
     // Base routes everyone has (adapted for role)
     routes.push({ title: 'Dashboard', href: `${rolePrefix}/dashboard` });
@@ -45,17 +45,17 @@ export async function GET(request: Request) {
       routes.push({ title: 'Commission Settings', href: '/admin/settings' });
       routes.push({ title: 'Audit Logs', href: '/admin/audit-logs' });
       routes.push({ title: 'Reports', href: '/admin/reports' });
-    } else if (session.user.role === UserRole.MANAGER) {
-      routes.push({ title: 'My Team', href: '/manager/team' });
-      routes.push({ title: 'Sales', href: '/manager/sales' });
-      routes.push({ title: 'Team Commissions', href: '/manager/commissions' });
-      routes.push({ title: 'Team Registrations', href: '/manager/registrations' });
+    } else if (session.user.role === UserRole.TEAM) {
+      routes.push({ title: 'My Team', href: '/team/team' });
+      routes.push({ title: 'Sales', href: '/team/sales' });
+      routes.push({ title: 'Team Commissions', href: '/team/commissions' });
+      routes.push({ title: 'Team Registrations', href: '/team/registrations' });
     } else {
-      // Member
-      routes.push({ title: 'Products', href: '/member/products' });
-      routes.push({ title: 'My Orders', href: '/member/orders' });
-      routes.push({ title: 'My Commission', href: '/member/commission' });
-      routes.push({ title: 'Referral Link', href: '/member/referrals' });
+      // Sakhi
+      routes.push({ title: 'Products', href: '/sakhi/products' });
+      routes.push({ title: 'My Orders', href: '/sakhi/orders' });
+      routes.push({ title: 'My Commission', href: '/sakhi/commission' });
+      routes.push({ title: 'Referral Link', href: '/sakhi/referrals' });
     }
 
     const matchedRoutes = routes.filter(r => r.title.toLowerCase().includes(lowerQuery));
@@ -63,8 +63,8 @@ export async function GET(request: Request) {
       results.push({ type: 'route', title: r.title, subtitle: 'Page', href: r.href });
     }
 
-    // 2. User Search (Only Admin and Manager)
-    if (session.user.role === UserRole.ROOT_ADMIN || session.user.role === UserRole.MANAGER) {
+    // 2. User Search (Only Admin and Team)
+    if (session.user.role === UserRole.ROOT_ADMIN || session.user.role === UserRole.TEAM) {
       const dbQuery: any = {
         $or: [
           { name: { $regex: query, $options: 'i' } },
@@ -74,17 +74,17 @@ export async function GET(request: Request) {
         ]
       };
 
-      // Managers can only search their team? Actually, let's keep it simple or restrict to their team if manager.
+      // Teams can only search their team? Actually, let's keep it simple or restrict to their team if team.
       // But the prompt says "user bhi search kr sakte phone number name raferal code ks ath".
       // Let's just do a generic search but if they click the result it goes to users/[id] for Admin, or maybe network view.
-      // We will direct Admins to User Profile, Managers to Network view (since Managers don't have a specific user profile page).
+      // We will direct Admins to User Profile, Teams to Network view (since Teams don't have a specific user profile page).
       
       const matchedUsers = await User.find(dbQuery).limit(5).lean();
 
       for (const u of matchedUsers) {
         const href = session.user.role === UserRole.ROOT_ADMIN 
           ? `/admin/users/${u.referralCode}`
-          : `/manager/team?search=${u.referralCode}`;
+          : `/team/team?search=${u.referralCode}`;
           
         results.push({
           type: 'user',

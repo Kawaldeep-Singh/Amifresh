@@ -169,14 +169,15 @@ export async function updateUserStatus(
 }
 
 export async function getAdminUserStats() {
-  const [total, active, managers, members, blocked, inactive] = await Promise.all([
+  const [total, active, teams, sakhis, blocked, inactive, pending] = await Promise.all([
     User.countDocuments(),
     User.countDocuments({ status: UserStatus.ACTIVE }),
-    User.countDocuments({ role: UserRole.MANAGER }),
-    User.countDocuments({ role: UserRole.MEMBER }),
+    User.countDocuments({ role: UserRole.TEAM }),
+    User.countDocuments({ role: UserRole.SAKHI }),
     User.countDocuments({ status: UserStatus.BLOCKED }),
     User.countDocuments({ status: UserStatus.INACTIVE }),
+    User.countDocuments({ status: UserStatus.PENDING }),
   ]);
 
-  return { total, active, managers, members, blocked, inactive };
+  return { total, active, teams, sakhis, blocked, inactive, pending };
 }

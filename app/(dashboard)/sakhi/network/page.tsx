@@ -41,7 +41,7 @@ const TreeNode = ({ node }: { node: any }) => {
   );
 };
 
-export default function MemberNetworkPage() {
+export default function SakhiNetworkPage() {
   const { data: session } = useSession();
   const [treeData, setTreeData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +80,7 @@ export default function MemberNetworkPage() {
           My Network Tree
         </h1>
         <p className="text-sm text-gray-600 mt-1">
-          Visual representation of your referred members and their downline.
+          Visual representation of your referred sakhis and their downline.
         </p>
       </div>
 

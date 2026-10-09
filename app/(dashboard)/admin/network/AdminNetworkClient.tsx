@@ -11,7 +11,7 @@ const TreeNode = ({ node }: { node: any }) => {
   const getRoleColor = (role: string) => {
     switch(role) {
       case 'ROOT_ADMIN': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'MANAGER': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'TEAM': return 'bg-blue-100 text-blue-700 border-blue-200';
       default: return 'bg-green-100 text-green-700 border-green-200';
     }
   };
@@ -44,7 +44,7 @@ const TreeNode = ({ node }: { node: any }) => {
               <div className="flex justify-between items-start">
                 <p className="text-sm font-bold text-gray-900 truncate" title={node.name}>{node.name}</p>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium border ${getRoleColor(node.role)}`}>
-                  {node.role === 'ROOT_ADMIN' ? 'Admin' : node.role === 'MANAGER' ? 'Manager' : 'Member'}
+                  {node.role === 'ROOT_ADMIN' ? 'Admin' : node.role === 'TEAM' ? 'Team' : 'Sakhi'}
                 </span>
               </div>
               <p className="text-xs text-gray-500 truncate" title={node.email}>{node.email}</p>

@@ -70,7 +70,7 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
           <Eye size={16} /> <span className="hidden sm:inline">View</span>
         </Link>
 
-        {!isSelf && (
+        {!isSelf && currentStatus !== UserStatus.PENDING && (
           <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden ml-1 bg-white">
             {currentStatus !== UserStatus.ACTIVE && (
               <button 
@@ -111,6 +111,12 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
               <Key size={16} />
             </button>
           </div>
+        )}
+
+        {currentStatus === UserStatus.PENDING && (
+          <Link href="/admin/registrations" className="text-orange-500 hover:text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium ml-1">
+            Review
+          </Link>
         )}
       </div>
 

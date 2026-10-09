@@ -65,13 +65,19 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.status = user.status;
         token.referralCode = user.referralCode;
         token.mustChangePassword = (user as any).mustChangePassword;
+      }
+      
+      if (trigger === 'update' && session) {
+        if (session.mustChangePassword !== undefined) {
+          token.mustChangePassword = session.mustChangePassword;
+        }
       }
       return token;
     },
@@ -81,7 +87,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.status = token.status;
         session.user.referralCode = token.referralCode;
-        session.user.mustChangePassword = token.mustChangePassword;
+        (session.user as any).mustChangePassword = token.mustChangePassword;
       }
       return session;
     },

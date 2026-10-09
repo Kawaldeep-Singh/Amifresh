@@ -15,7 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
-  
+
   const adminLinks = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Users', href: '/admin/users', icon: Users },
@@ -29,33 +29,33 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
-  const managerLinks = [
-    { name: 'Dashboard', href: '/manager/dashboard', icon: LayoutDashboard },
-    { name: 'My Team', href: '/manager/team', icon: Users },
-    { name: 'Network', href: '/manager/network', icon: Network },
-    { name: 'Registrations', href: '/manager/registrations', icon: UserPlus },
-    { name: 'Sales', href: '/manager/sales', icon: ShoppingCart },
-    { name: 'Commissions', href: '/manager/commissions', icon: IndianRupee },
-    { name: 'Profile', href: '/manager/profile', icon: Settings },
+  const teamLinks = [
+    { name: 'Dashboard', href: '/team/dashboard', icon: LayoutDashboard },
+    { name: 'My Team', href: '/team/team', icon: Users },
+    { name: 'Network', href: '/team/network', icon: Network },
+    { name: 'Registrations', href: '/team/registrations', icon: UserPlus },
+    { name: 'Sales', href: '/team/sales', icon: ShoppingCart },
+    { name: 'Commissions', href: '/team/commissions', icon: IndianRupee },
+    { name: 'Profile', href: '/team/profile', icon: Settings },
   ];
 
-  const memberLinks = [
-    { name: 'Dashboard', href: '/member/dashboard', icon: LayoutDashboard },
-    { name: 'My Referrals', href: '/member/referrals', icon: UserPlus },
-    { name: 'My Network', href: '/member/network', icon: Network },
-    { name: 'Products', href: '/member/products', icon: Package },
-    { name: 'My Orders', href: '/member/orders', icon: ShoppingCart },
-    { name: 'My Commission', href: '/member/commission', icon: IndianRupee },
-    { name: 'Profile', href: '/member/profile', icon: Settings },
+  const sakhiLinks = [
+    { name: 'Dashboard', href: '/sakhi/dashboard', icon: LayoutDashboard },
+    { name: 'My Referrals', href: '/sakhi/referrals', icon: UserPlus },
+    { name: 'My Network', href: '/sakhi/network', icon: Network },
+    { name: 'Products', href: '/sakhi/products', icon: Package },
+    { name: 'My Orders', href: '/sakhi/orders', icon: ShoppingCart },
+    { name: 'My Commission', href: '/sakhi/commission', icon: IndianRupee },
+    { name: 'Profile', href: '/sakhi/profile', icon: Settings },
   ];
 
-  const links = role === UserRole.ROOT_ADMIN ? adminLinks : role === UserRole.MANAGER ? managerLinks : memberLinks;
+  const links = role === UserRole.ROOT_ADMIN ? adminLinks : role === UserRole.TEAM ? teamLinks : sakhiLinks;
 
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -63,42 +63,43 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-sidebar-bg text-sidebar-text border-r border-border transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
+        fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-[#142318] text-white border-r border-[#1e3b26] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-16 px-4 border-b border-border">
-          <Link href={role === UserRole.ROOT_ADMIN ? '/admin/dashboard' : role === UserRole.MANAGER ? '/manager/dashboard' : '/member/dashboard'} className="flex items-center">
-            <Image src="/Amifresh%20logo%20Light%20theam.webp" alt="Amifresh Logo" width={140} height={40} className="object-contain" />
+        <div className="flex items-center justify-center h-20 px-4 border-b border-[#1e3b26] relative">
+          <Link href={role === UserRole.ROOT_ADMIN ? '/admin/dashboard' : role === UserRole.TEAM ? '/team/dashboard' : '/sakhi/dashboard'} className="flex items-center">
+            <Image src="/amifresh-dark-thema.webp" alt="Amifresh Logo" width={160} height={45} className="object-contain" />
           </Link>
-          <button 
-            className="lg:hidden p-2 text-sidebar-text hover:text-white rounded-md"
+          <button
+            className="lg:hidden absolute right-4 p-2 text-gray-300 hover:text-white rounded-md"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-6 w-6" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto py-4">
-          <nav className="space-y-1 px-2">
+        <div className="flex-1 overflow-y-auto py-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <nav className="space-y-2 px-4">
             {links.map((link) => {
               const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
               const Icon = link.icon;
-              
+
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all mb-1 ${
+                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                     isActive
-                      ? 'bg-primary text-white shadow-[0_4px_12px_rgba(15,138,60,0.2)]'
-                      : 'text-text-muted hover:bg-primary-light hover:text-primary'
+                      ? 'bg-[#2E7C31] text-white'
+                      : 'text-gray-200 hover:bg-[#1b3121] hover:text-white'
                   }`}
                 >
                   <Icon
-                    className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
-                      isActive ? 'text-white' : 'text-text-muted group-hover:text-primary'
+                    className={`mr-4 h-5 w-5 flex-shrink-0 transition-colors ${
+                      isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'
                     }`}
                     aria-hidden="true"
+                    strokeWidth={isActive ? 2.5 : 2}
                   />
                   {link.name}
                 </Link>
@@ -106,12 +107,12 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
             })}
           </nav>
         </div>
-        <div className="flex-shrink-0 flex border-t border-border p-4">
+        <div className="flex-shrink-0 flex border-t border-[#1e3b26] p-4">
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex-shrink-0 group w-full flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl text-text-muted hover:bg-danger/10 hover:text-danger transition-colors"
+            className="flex-shrink-0 group w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-200 hover:bg-red-500/10 hover:text-red-400 transition-colors"
           >
-            <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-text-muted group-hover:text-danger" aria-hidden="true" />
+            <LogOut className="mr-4 h-5 w-5 flex-shrink-0 text-gray-300 group-hover:text-red-400" aria-hidden="true" />
             Sign out
           </button>
         </div>

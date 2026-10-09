@@ -10,6 +10,16 @@ export interface IRegistrationRequest extends Document {
   name: string;
   email: string;
   phone: string;
+  dob?: string;
+  gender?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pinCode?: string;
+  fatherSpouseName?: string;
+  photo?: string;
+  panCard?: string;
+  aadhaarCard?: string;
   passwordHash?: string;
   referralCode?: string;
   referrer?: mongoose.Types.ObjectId;
@@ -26,6 +36,16 @@ const RegistrationRequestSchema: Schema = new Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
+    dob: { type: String },
+    gender: { type: String },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    pinCode: { type: String },
+    fatherSpouseName: { type: String },
+    photo: { type: String },
+    panCard: { type: String },
+    aadhaarCard: { type: String },
     passwordHash: { type: String, required: false },
     referralCode: { type: String },
     referrer: { type: Schema.Types.ObjectId, ref: 'User' },

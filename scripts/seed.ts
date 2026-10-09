@@ -46,54 +46,54 @@ async function seed() {
       updatedBy: rootAdmin._id,
     });
 
-    // Create Managers
-    const manager1 = await User.create({
-      name: 'Amit Manager',
+    // Create Teams
+    const team1 = await User.create({
+      name: 'Amit Team',
       email: 'amit@example.com',
       phone: '8888888881',
       password: hashedPassword,
-      role: UserRole.MANAGER,
+      role: UserRole.TEAM,
       referralCode: 'AMIT8395',
       referredBy: rootAdmin._id,
       status: UserStatus.ACTIVE,
     });
 
-    const manager2 = await User.create({
-      name: 'Raj Manager',
+    const team2 = await User.create({
+      name: 'Raj Team',
       email: 'raj@example.com',
       phone: '8888888882',
       password: hashedPassword,
-      role: UserRole.MANAGER,
+      role: UserRole.TEAM,
       referralCode: 'RAJM1234',
       referredBy: rootAdmin._id,
       status: UserStatus.ACTIVE,
     });
-    console.log('Managers created');
+    console.log('Teams created');
 
-    // Create Members
-    const member1 = await User.create({
-      name: 'Kawal Member',
+    // Create Sakhis
+    const sakhi1 = await User.create({
+      name: 'Kawal Sakhi',
       email: 'kawal@example.com',
       phone: '7777777771',
       password: hashedPassword,
-      role: UserRole.MEMBER,
+      role: UserRole.SAKHI,
       referralCode: 'KAWA8395',
-      referredBy: manager1._id,
+      referredBy: team1._id,
       status: UserStatus.ACTIVE,
     });
 
-    const member2 = await User.create({
-      name: 'Laljeet Member',
+    const sakhi2 = await User.create({
+      name: 'Laljeet Sakhi',
       email: 'laljeet@example.com',
       phone: '7777777772',
       password: hashedPassword,
-      role: UserRole.MEMBER,
+      role: UserRole.SAKHI,
       referralCode: 'LALJ7824',
-      referredBy: member1._id,
+      referredBy: sakhi1._id,
       status: UserStatus.ACTIVE,
     });
     
-    console.log('Members created');
+    console.log('Sakhis created');
     console.log('Seed completed successfully!');
 
     process.exit(0);

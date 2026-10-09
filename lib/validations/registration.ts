@@ -5,6 +5,16 @@ export const registrationSchema = z.object({
   email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number').trim(),
   referralCode: z.string().toUpperCase().trim().optional(),
+  dob: z.string().optional(),
+  gender: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  pinCode: z.string().optional(),
+  fatherSpouseName: z.string().optional(),
+  photo: z.string().optional(),
+  panCard: z.string().optional(),
+  aadhaarCard: z.string().optional(),
 });
 
 export const approveRegistrationSchema = z.object({

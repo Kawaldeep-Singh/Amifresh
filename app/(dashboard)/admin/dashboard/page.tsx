@@ -33,32 +33,32 @@ export default async function AdminDashboard() {
           </div>
         </Link>
         
-        <Link href="/admin/users?role=MEMBER&status=ACTIVE" className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-green-500 transition-colors hover:shadow-md cursor-pointer block group">
-          <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-            <Users size={24} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-500">Active Members</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.activeMembers}</p>
-          </div>
-        </Link>
-
-        <Link href="/admin/users?role=MANAGER" className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-blue-500 transition-colors hover:shadow-md cursor-pointer block group">
+        <Link href="/admin/users?role=SAKHI" className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-blue-500 transition-colors hover:shadow-md cursor-pointer block group">
           <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
             <Users size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Managers</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalManagers}</p>
+            <p className="text-sm font-medium text-gray-500">Total Sakhi</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.totalSakhis}</p>
           </div>
         </Link>
+        <Link href="/admin/users?role=SAKHI&status=ACTIVE" className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-green-500 transition-colors hover:shadow-md cursor-pointer block group">
+          <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+            <Users size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Active Sakhi</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.activeSakhis}</p>
+          </div>
+        </Link>
+
         
         <Link href="/admin/registrations" className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center gap-4 hover:border-yellow-500 transition-colors hover:shadow-md cursor-pointer block group">
           <div className="h-12 w-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-white transition-colors">
             <UserPlus size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Pending Registrations</p>
+            <p className="text-sm font-medium text-gray-500">Pending Sakhi</p>
             <p className="text-2xl font-bold text-gray-900">{stats.pendingRegistrations}</p>
           </div>
         </Link>

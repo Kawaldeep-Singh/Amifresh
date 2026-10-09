@@ -8,25 +8,28 @@ export async function getAdminDashboardStats() {
 
   const [
     totalUsers,
-    activeMembers,
+    activeSakhis,
+    totalSakhis,
     pendingRegistrations,
-    totalManagers
+    totalTeams
   ] = await Promise.all([
     User.countDocuments(),
-    User.countDocuments({ role: UserRole.MEMBER, status: UserStatus.ACTIVE }),
-    RegistrationRequest.countDocuments({ status: RegistrationStatus.PENDING }),
-    User.countDocuments({ role: UserRole.MANAGER, status: UserStatus.ACTIVE }),
+    User.countDocuments({ role: UserRole.SAKHI, status: UserStatus.ACTIVE }),
+    User.countDocuments({ role: UserRole.SAKHI }),
+    User.countDocuments({ status: UserStatus.PENDING }),
+    User.countDocuments({ role: UserRole.TEAM, status: UserStatus.ACTIVE }),
   ]);
 
   return {
     totalUsers,
-    activeMembers,
+    activeSakhis,
+    totalSakhis,
     pendingRegistrations,
-    totalManagers,
+    totalTeams,
   };
 }
 
-export async function getMemberDashboardStats(userId: string) {
+export async function getSakhiDashboardStats(userId: string) {
   await connectDB();
 
   // Find user to verify

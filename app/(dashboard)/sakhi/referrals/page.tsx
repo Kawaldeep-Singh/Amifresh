@@ -12,9 +12,9 @@ export const metadata: Metadata = {
   title: 'My Referrals | Amifresh',
 };
 
-export default async function MemberReferralsPage() {
+export default async function SakhiReferralsPage() {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== UserRole.MEMBER) {
+  if (!session || session.user.role !== UserRole.SAKHI) {
     redirect('/login');
   }
 

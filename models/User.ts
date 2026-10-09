@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export enum UserRole {
   ROOT_ADMIN = 'ROOT_ADMIN',
-  MANAGER = 'MANAGER',
-  MEMBER = 'MEMBER',
+  TEAM = 'TEAM',
+  SAKHI = 'SAKHI',
 }
 
 export enum UserStatus {
@@ -29,6 +29,16 @@ export interface IUser extends Document {
   commissionRate: number;
   totalSales: number;
   totalCommission: number;
+  dob?: string;
+  gender?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pinCode?: string;
+  fatherSpouseName?: string;
+  photo?: string;
+  panCard?: string;
+  aadhaarCard?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,7 +51,7 @@ const UserSchema: Schema = new Schema(
     password: { type: String, select: false },
     loginId: { type: String, unique: true, sparse: true, index: true },
     mustChangePassword: { type: Boolean, default: false },
-    role: { type: String, enum: Object.values(UserRole), default: UserRole.MEMBER, index: true },
+    role: { type: String, enum: Object.values(UserRole), default: UserRole.SAKHI, index: true },
     referralCode: { type: String, required: true, unique: true, index: true },
     referredBy: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     status: { type: String, enum: Object.values(UserStatus), default: UserStatus.PENDING, index: true },
@@ -49,6 +59,16 @@ const UserSchema: Schema = new Schema(
     commissionRate: { type: Number, default: 35 },
     totalSales: { type: Number, default: 0 },
     totalCommission: { type: Number, default: 0 },
+    dob: { type: String },
+    gender: { type: String },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    pinCode: { type: String },
+    fatherSpouseName: { type: String },
+    photo: { type: String },
+    panCard: { type: String },
+    aadhaarCard: { type: String },
   },
   { timestamps: true }
 );

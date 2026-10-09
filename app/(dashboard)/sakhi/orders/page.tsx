@@ -2,7 +2,7 @@ import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { PlaceholderState } from '@/components/ui/PlaceholderState';
 
-export default function MemberOrdersPage() {
+export default function SakhiOrdersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

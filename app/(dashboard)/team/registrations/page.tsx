@@ -10,7 +10,7 @@ export default function ManagerRegistrationsPage() {
       </div>
       <PlaceholderState
         icon={UserPlus}
-        title="Pending Registrations"
+        title="Pending Sakhi"
         description="Pending team registrations will appear here for your review and approval in a future update."
       />
     </div>

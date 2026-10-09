@@ -13,7 +13,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -23,7 +23,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return null; // or redirect, though middleware handles it
   }
 
-  if (session.user.mustChangePassword) {
+  if ((session.user as any).mustChangePassword) {
     if (typeof window !== 'undefined') {
       window.location.href = '/change-password';
     }
@@ -31,7 +31,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg">
+    <div className="flex h-screen overflow-hidden bg-white">
       <Sidebar 
         role={session.user.role as UserRole} 
         isOpen={isMobileMenuOpen} 

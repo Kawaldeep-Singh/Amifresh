@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { UserPlus, Check, X } from 'lucide-react';
+import { UserPlus, Check, X, Eye } from 'lucide-react';
 
 export default function RegistrationsPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -10,8 +10,10 @@ export default function RegistrationsPage() {
   const [error, setError] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('PENDING');
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+  const [assignedRole, setAssignedRole] = useState('SAKHI');
 
-  const [credentials, setCredentials] = useState<{loginId: string, tempPassword: string} | null>(null);
+  const [credentials, setCredentials] = useState<{email: string, loginId: string, tempPassword: string} | null>(null);
 
   const fetchRequests = async (status: string) => {
     try {
@@ -39,7 +41,7 @@ export default function RegistrationsPage() {
     return () => { isMounted = false; };
   }, [statusFilter]);
 
-  const handleAction = async (id: string, action: 'APPROVE' | 'REJECT') => {
+  const handleAction = async (id: string, action: 'APPROVE' | 'REJECT', role?: string) => {
     let reason = '';
     if (action === 'REJECT') {
       const input = prompt('Please enter a reason for rejection (min 5 chars):');
@@ -58,7 +60,7 @@ export default function RegistrationsPage() {
       const res = await fetch(`/api/registrations/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, reason }),
+        body: JSON.stringify({ action, reason, role }),
       });
       const data = await res.json();
       
@@ -66,8 +68,10 @@ export default function RegistrationsPage() {
       
       if (data.credentials) {
         setCredentials(data.credentials);
+        setSelectedRequest(null);
       } else {
         alert(data.message);
+        setSelectedRequest(null);
       }
       fetchRequests(statusFilter);
     } catch (err: any) {
@@ -79,14 +83,14 @@ export default function RegistrationsPage() {
 
   const copyCredentials = () => {
     if (!credentials) return;
-    const text = `Welcome to AmiFresh!\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
+    const text = `Welcome to AmiFresh!\nYour Email: ${credentials.email}\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
     navigator.clipboard.writeText(text);
     alert('Credentials copied to clipboard!');
   };
 
   const shareWhatsApp = () => {
     if (!credentials) return;
-    const text = `Welcome to AmiFresh!\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
+    const text = `Welcome to AmiFresh!\nYour Email: ${credentials.email}\nYour Login ID: ${credentials.loginId}\nYour Temporary Password: ${credentials.tempPassword}\nPlease login and change your password.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -176,21 +180,10 @@ export default function RegistrationsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <Button 
                           size="sm" 
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          isLoading={processingId === req._id}
-                          disabled={processingId !== null}
-                          onClick={() => handleAction(req._id, 'APPROVE')}
+                          className="bg-primary hover:bg-primary-dark text-white"
+                          onClick={() => setSelectedRequest(req)}
                         >
-                          <Check size={16} className="mr-1" /> Approve
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="danger"
-                          isLoading={processingId === req._id}
-                          disabled={processingId !== null}
-                          onClick={() => handleAction(req._id, 'REJECT')}
-                        >
-                          <X size={16} className="mr-1" /> Reject
+                          <Eye size={16} className="mr-1" /> View Details
                         </Button>
                       </td>
                     )}
@@ -202,6 +195,110 @@ export default function RegistrationsPage() {
         )}
       </div>
 
+      {selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Registration Details</h2>
+              <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-primary-dark uppercase mb-3">Personal Info</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-gray-500">Name:</span> <span className="font-medium">{selectedRequest.name}</span></p>
+                    <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{selectedRequest.phone}</span></p>
+                    <p><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedRequest.email}</span></p>
+                    <p><span className="text-gray-500">DOB:</span> <span className="font-medium">{selectedRequest.dob || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">Gender:</span> <span className="font-medium">{selectedRequest.gender || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">Father/Spouse:</span> <span className="font-medium">{selectedRequest.fatherSpouseName || 'N/A'}</span></p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-primary-dark uppercase mb-3">Address & Ref</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-gray-500">Address:</span> <span className="font-medium">{selectedRequest.address || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">City:</span> <span className="font-medium">{selectedRequest.city || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">State:</span> <span className="font-medium">{selectedRequest.state || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">PIN Code:</span> <span className="font-medium">{selectedRequest.pinCode || 'N/A'}</span></p>
+                    <p><span className="text-gray-500">Referral Code Used:</span> <span className="font-medium">{selectedRequest.referralCode || 'None'}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-sm font-semibold text-primary-dark uppercase mb-3 border-b pb-2">Documents</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {['photo', 'panCard', 'aadhaarCard'].map(docType => {
+                    const docValue = selectedRequest[docType];
+                    const labels: any = { photo: 'Profile Photo', panCard: 'PAN Card', aadhaarCard: 'Aadhaar Card' };
+                    return (
+                      <div key={docType} className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex flex-col items-center justify-center text-center">
+                        <span className="text-xs font-semibold text-gray-500 uppercase mb-2">{labels[docType]}</span>
+                        {docValue ? (
+                          <div className="relative w-full h-32 bg-gray-200 rounded-md overflow-hidden">
+                             {docValue.startsWith('data:image') ? (
+                               <img src={docValue} alt={docType} className="w-full h-full object-cover" />
+                             ) : (
+                               <div className="flex items-center justify-center h-full text-xs text-gray-500">Document Uploaded</div>
+                             )}
+                          </div>
+                        ) : (
+                          <div className="w-full h-32 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md text-gray-400 text-xs">
+                            Not Provided
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+            </div>
+            <div className="p-4 sm:p-6 border-t border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-gray-50 rounded-b-xl">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-semibold text-gray-700 whitespace-nowrap">Assign Role:</label>
+                <select 
+                  className="border border-gray-300 bg-white rounded-md text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  value={assignedRole}
+                  onChange={(e) => setAssignedRole(e.target.value)}
+                >
+                  <option value="SAKHI">Sakhi (Default)</option>
+                  <option value="TEAM">Team (Internal)</option>
+                </select>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedRequest(null)}
+                  className="flex-1 sm:flex-none"
+                >
+                  Close
+                </Button>
+                <Button 
+                  variant="danger"
+                  isLoading={processingId === selectedRequest._id}
+                  disabled={processingId !== null}
+                  onClick={() => handleAction(selectedRequest._id, 'REJECT')}
+                  className="flex-1 sm:flex-none"
+                >
+                  <X size={16} className="mr-1" /> Reject
+                </Button>
+                <Button 
+                  className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+                  isLoading={processingId === selectedRequest._id}
+                  disabled={processingId !== null}
+                  onClick={() => handleAction(selectedRequest._id, 'APPROVE', assignedRole)}
+                >
+                  <Check size={16} className="mr-1" /> Approve & Generate ID
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {credentials && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
@@ -212,8 +309,9 @@ export default function RegistrationsPage() {
             
             <div className="bg-gray-50 p-4 rounded-lg space-y-3 mb-6">
               <div>
-                <span className="text-xs text-gray-500 font-medium uppercase">Login ID</span>
-                <div className="font-mono text-lg font-bold text-gray-900">{credentials.loginId}</div>
+                <span className="text-xs text-gray-500 font-medium uppercase">Email / Login ID</span>
+                <div className="font-mono text-lg font-bold text-gray-900">{credentials.email}</div>
+                <div className="text-xs text-gray-500 font-mono mt-1">Alt ID: {credentials.loginId}</div>
               </div>
               <div>
                 <span className="text-xs text-gray-500 font-medium uppercase">Temporary Password</span>
