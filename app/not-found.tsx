@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="flex flex-col min-h-screen bg-bg items-center justify-center p-4">
       <div className="mb-10 animate-fade-in-up">
-        <Image src="/Logo.webp" alt="Amifresh Logo" width={200} height={60} className="object-contain" />
+        <Image src="/amifresh-dark-thema.webp" alt="Amifresh Logo" width={200} height={60} className="object-contain" />
       </div>
       
       <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-center max-w-lg w-full relative overflow-hidden">

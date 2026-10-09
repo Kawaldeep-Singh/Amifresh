@@ -117,7 +117,7 @@ export default function LoginPage() {
           <div>
             <div className="flex items-center gap-6 mb-10">
               <div className="relative w-56 h-20 sm:w-72 sm:h-28">
-                <Image src="/Amifresh%20logo%20Light%20theam.webp" alt="AmiFresh" fill className="object-contain object-left" />
+                <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" />
               </div>
               <div className="w-px h-12 bg-black/10"></div>
               <div className="relative w-40 h-20 sm:w-56 sm:h-28">
