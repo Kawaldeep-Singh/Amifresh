@@ -5,17 +5,17 @@ import connectDB from '@/lib/mongodb';
 import User, { UserRole } from '@/models/User';
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get('q');
+
+  if (!query || query.length < 2) {
+    return NextResponse.json({ results: [] });
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-
-    if (!query || query.length < 2) {
-      return NextResponse.json({ results: [] });
     }
 
     await connectDB();
