@@ -73,6 +73,8 @@ const UserSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+UserSchema.index({ role: 1, status: 1 });
+UserSchema.index({ referredBy: 1, status: 1 });
 UserSchema.index({ createdAt: -1 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

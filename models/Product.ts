@@ -35,7 +35,6 @@ const ProductSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-ProductSchema.index({ slug: 1 });
 ProductSchema.index({ status: 1 });
 ProductSchema.index({ createdAt: -1 });
 

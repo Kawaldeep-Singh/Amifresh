@@ -6,54 +6,63 @@ import mongoose from 'mongoose';
 export async function getAdminDashboardStats() {
   await connectDB();
 
-  const [
-    totalUsers,
-    activeSakhis,
-    totalSakhis,
-    pendingRegistrations,
-    totalTeams
-  ] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ role: UserRole.SAKHI, status: UserStatus.ACTIVE }),
-    User.countDocuments({ role: UserRole.SAKHI }),
-    User.countDocuments({ status: UserStatus.PENDING }),
-    User.countDocuments({ role: UserRole.TEAM, status: UserStatus.ACTIVE }),
+  const results = await User.aggregate([
+    {
+      $facet: {
+        totalUsers: [{ $count: 'count' }],
+        activeSakhis: [
+          { $match: { role: UserRole.SAKHI, status: UserStatus.ACTIVE } },
+          { $count: 'count' },
+        ],
+        totalSakhis: [
+          { $match: { role: UserRole.SAKHI } },
+          { $count: 'count' },
+        ],
+        pendingRegistrations: [
+          { $match: { status: UserStatus.PENDING } },
+          { $count: 'count' },
+        ],
+        totalTeams: [
+          { $match: { role: UserRole.TEAM, status: UserStatus.ACTIVE } },
+          { $count: 'count' },
+        ],
+      },
+    },
   ]);
 
+  const facet = results[0] || {};
   return {
-    totalUsers,
-    activeSakhis,
-    totalSakhis,
-    pendingRegistrations,
-    totalTeams,
+    totalUsers: facet.totalUsers?.[0]?.count || 0,
+    activeSakhis: facet.activeSakhis?.[0]?.count || 0,
+    totalSakhis: facet.totalSakhis?.[0]?.count || 0,
+    pendingRegistrations: facet.pendingRegistrations?.[0]?.count || 0,
+    totalTeams: facet.totalTeams?.[0]?.count || 0,
   };
 }
 
 export async function getSakhiDashboardStats(userId: string) {
   await connectDB();
 
-  // Find user to verify
-  const user = await User.findById(userId);
+  // Find user to verify with lean query
+  const user = await User.findById(userId).select('status totalCommission totalSales').lean();
   if (!user) throw new Error('User not found');
 
   // Direct referrals
   const directReferrals = await User.countDocuments({ referredBy: userId });
 
-  // Indirect referrals (level 2) - For a full tree we'd use $graphLookup, but for quick stats let's do a simple count
-  // We can just get direct referrals IDs and then count their referrals
-  const directReferralDocs = await User.find({ referredBy: userId }).select('_id');
-  const directReferralIds = directReferralDocs.map(doc => doc._id);
-  const indirectReferrals = await User.countDocuments({ referredBy: { $in: directReferralIds } });
+  // Indirect referrals
+  const directReferralDocs = await User.find({ referredBy: userId }).select('_id').lean();
+  const directReferralIds = directReferralDocs.map((doc: any) => doc._id);
+  const indirectReferrals = directReferralIds.length > 0
+    ? await User.countDocuments({ referredBy: { $in: directReferralIds } })
+    : 0;
 
-  // For total network size, we can either do full graphLookup or just sum direct + indirect for now
-  // Since Phase 4 has a full tree API, we can use a simpler stat here.
-  
   return {
     directReferrals,
     indirectReferrals,
     totalNetwork: directReferrals + indirectReferrals,
     status: user.status,
-    totalCommission: user.totalCommission,
-    totalSales: user.totalSales,
+    totalCommission: user.totalCommission || 0,
+    totalSales: user.totalSales || 0,
   };
 }
