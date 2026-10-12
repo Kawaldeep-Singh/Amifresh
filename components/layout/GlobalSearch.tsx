@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, User, FileText, ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -84,7 +85,17 @@ export function GlobalSearch() {
       {isOpen && query.trim().length >= 2 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-lg shadow-xl border border-border overflow-hidden z-50 max-h-96 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-text-muted">Searching...</div>
+            <div className="p-3 space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-2">
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                  <div className="space-y-1.5 flex-1">
+                    <Skeleton className="h-3.5 w-3/4" />
+                    <Skeleton className="h-2.5 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : results.length > 0 ? (
             <div className="py-2">
               {results.map((result, idx) => (

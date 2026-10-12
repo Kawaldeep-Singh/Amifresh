@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Network, User as UserIcon, Copy, Check, Search } from 'lucide-react';
+import { TreeSkeleton } from '@/components/ui/Skeleton';
 
 import Link from 'next/link';
 
@@ -154,11 +155,7 @@ export default function AdminNetworkClient() {
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-h-[500px] overflow-auto">
-        {loading && (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        )}
+        {loading && <TreeSkeleton />}
         
         {error && (
           <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg border border-red-100">

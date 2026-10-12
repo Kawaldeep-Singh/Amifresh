@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { UserPlus, Check, X, Eye } from 'lucide-react';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 
 export default function RegistrationsPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -126,7 +127,9 @@ export default function RegistrationsPage() {
 
       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading registrations...</div>
+          <div className="p-4">
+            <TableSkeleton rows={5} cols={5} />
+          </div>
         ) : error ? (
           <div className="p-8 text-center text-red-500">{error}</div>
         ) : requests.length === 0 ? (

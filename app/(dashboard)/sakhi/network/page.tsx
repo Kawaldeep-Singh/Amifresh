@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Network, User as UserIcon, Copy, Check } from 'lucide-react';
+import { Skeleton, TreeSkeleton } from '@/components/ui/Skeleton';
 
 // Basic recursive component to display the tree
 const TreeNode = ({ node }: { node: any }) => {
@@ -90,7 +91,12 @@ export default function SakhiNetworkPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Referral Link</h2>
             
             {loading ? (
-              <div className="animate-pulse bg-gray-200 h-10 rounded w-full"></div>
+              <div className="space-y-3">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-3 w-24 mt-3" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
             ) : error ? (
               <p className="text-sm text-red-500">Unable to load code</p>
             ) : treeData ? (
@@ -128,7 +134,12 @@ export default function SakhiNetworkPage() {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
              <h2 className="text-lg font-semibold text-gray-900 mb-2">Network Stats</h2>
              {loading ? (
-                <div className="animate-pulse bg-gray-200 h-16 rounded w-full"></div>
+               <div className="space-y-3 mt-4">
+                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                   <Skeleton className="h-4 w-28" />
+                   <Skeleton className="h-4 w-12" />
+                 </div>
+               </div>
              ) : treeData ? (
                <div className="space-y-4 mt-4">
                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -143,11 +154,7 @@ export default function SakhiNetworkPage() {
         <div className="lg:col-span-3">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 min-h-[500px] overflow-auto">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Tree View</h2>
-            {loading && (
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            )}
+            {loading && <TreeSkeleton />}
             
             {error && (
               <div className="text-red-500 text-center p-4 bg-red-50 rounded-lg border border-red-100">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { User as UserIcon, AlertCircle, Loader2 } from 'lucide-react';
+import { TreeSkeleton } from '@/components/ui/Skeleton';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -143,14 +144,7 @@ export default function NetworkTreeViewer({ userId }: { userId?: string }) {
   }, [userId, session?.user?.id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12 bg-white rounded-2xl border border-gray-200">
-        <div className="flex flex-col items-center gap-4 text-gray-500">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p>Loading network topology...</p>
-        </div>
-      </div>
-    );
+    return <TreeSkeleton />;
   }
 
   if (error) {
