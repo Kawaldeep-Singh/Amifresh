@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { UserRole } from '@/types/user';
 import connectDB from '@/lib/mongodb';
-import { getTeamTeam, getTeamTeamStats } from '@/services/team.service';
+import { getTeamTeam, getTeamTeamStats, getTeamDownlineIds } from '@/services/team.service';
 import Link from 'next/link';
 import { Search, Filter, Eye, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -32,9 +32,10 @@ export default async function TeamTeamPage({
   const role = typeof resolvedParams.role === 'string' ? resolvedParams.role : undefined;
   const status = typeof resolvedParams.status === 'string' ? resolvedParams.status : undefined;
 
+  const downlineIds = await getTeamDownlineIds(session.user.id);
   const [{ team, totalPages, total }, stats] = await Promise.all([
-    getTeamTeam({ teamId: session.user.id, page, limit, search, role, status }),
-    getTeamTeamStats(session.user.id)
+    getTeamTeam({ teamId: session.user.id, downlineIds, page, limit, search, role, status }),
+    getTeamTeamStats(session.user.id, downlineIds)
   ]);
 
   return (

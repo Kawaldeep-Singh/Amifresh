@@ -22,6 +22,7 @@ export async function getTeamDownlineIds(teamId: string): Promise<string[]> {
 
 export interface GetTeamParams {
   teamId: string;
+  downlineIds?: string[];
   page?: number;
   limit?: number;
   search?: string;
@@ -32,7 +33,7 @@ export interface GetTeamParams {
 export async function getTeamTeam(params: GetTeamParams) {
   const { teamId, page = 1, limit = 10, search, role, status } = params;
   
-  const downlineIds = await getTeamDownlineIds(teamId);
+  const downlineIds = params.downlineIds || await getTeamDownlineIds(teamId);
   
   if (downlineIds.length === 0) {
     return { team: [], total: 0, page, totalPages: 0 };
@@ -96,8 +97,8 @@ export async function getTeamTeam(params: GetTeamParams) {
   };
 }
 
-export async function getTeamTeamStats(teamId: string) {
-  const downlineIds = await getTeamDownlineIds(teamId);
+export async function getTeamTeamStats(teamId: string, cachedDownlineIds?: string[]) {
+  const downlineIds = cachedDownlineIds || await getTeamDownlineIds(teamId);
   
   if (downlineIds.length === 0) {
     return { total: 0, active: 0, inactive: 0, directReferrals: 0 };
@@ -105,12 +106,25 @@ export async function getTeamTeamStats(teamId: string) {
   
   const objectIds = downlineIds.map(id => new mongoose.Types.ObjectId(id));
   
-  const [total, active, inactive, directReferrals] = await Promise.all([
-    User.countDocuments({ _id: { $in: objectIds } }),
-    User.countDocuments({ _id: { $in: objectIds }, status: UserStatus.ACTIVE }),
-    User.countDocuments({ _id: { $in: objectIds }, status: { $ne: UserStatus.ACTIVE } }),
+  const [statsFacet, directReferrals] = await Promise.all([
+    User.aggregate([
+      { $match: { _id: { $in: objectIds } } },
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          active: [{ $match: { status: UserStatus.ACTIVE } }, { $count: 'count' }],
+          inactive: [{ $match: { status: { $ne: UserStatus.ACTIVE } } }, { $count: 'count' }],
+        }
+      }
+    ]),
     User.countDocuments({ referredBy: new mongoose.Types.ObjectId(teamId) })
   ]);
   
-  return { total, active, inactive, directReferrals };
+  const facet = statsFacet[0] || {};
+  return {
+    total: facet.total?.[0]?.count || 0,
+    active: facet.active?.[0]?.count || 0,
+    inactive: facet.inactive?.[0]?.count || 0,
+    directReferrals,
+  };
 }

@@ -169,15 +169,28 @@ export async function updateUserStatus(
 }
 
 export async function getAdminUserStats() {
-  const [total, active, teams, sakhis, blocked, inactive, pending] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ status: UserStatus.ACTIVE }),
-    User.countDocuments({ role: UserRole.TEAM }),
-    User.countDocuments({ role: UserRole.SAKHI }),
-    User.countDocuments({ status: UserStatus.BLOCKED }),
-    User.countDocuments({ status: UserStatus.INACTIVE }),
-    User.countDocuments({ status: UserStatus.PENDING }),
+  const results = await User.aggregate([
+    {
+      $facet: {
+        total: [{ $count: 'count' }],
+        active: [{ $match: { status: UserStatus.ACTIVE } }, { $count: 'count' }],
+        teams: [{ $match: { role: UserRole.TEAM } }, { $count: 'count' }],
+        sakhis: [{ $match: { role: UserRole.SAKHI } }, { $count: 'count' }],
+        blocked: [{ $match: { status: UserStatus.BLOCKED } }, { $count: 'count' }],
+        inactive: [{ $match: { status: UserStatus.INACTIVE } }, { $count: 'count' }],
+        pending: [{ $match: { status: UserStatus.PENDING } }, { $count: 'count' }],
+      },
+    },
   ]);
 
-  return { total, active, teams, sakhis, blocked, inactive, pending };
+  const f = results[0] || {};
+  return {
+    total: f.total?.[0]?.count || 0,
+    active: f.active?.[0]?.count || 0,
+    teams: f.teams?.[0]?.count || 0,
+    sakhis: f.sakhis?.[0]?.count || 0,
+    blocked: f.blocked?.[0]?.count || 0,
+    inactive: f.inactive?.[0]?.count || 0,
+    pending: f.pending?.[0]?.count || 0,
+  };
 }

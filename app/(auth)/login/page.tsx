@@ -11,11 +11,7 @@ import { signIn, getSession } from 'next-auth/react';
 import {
   User, Lock, Eye, EyeOff
 } from 'lucide-react';
-import { Poppins, Nunito, Caveat } from 'next/font/google';
-
-const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'] });
-const nunito = Nunito({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
-const caveat = Caveat({ subsets: ['latin'], weight: ['700'] });
+import { poppins, nunito, caveat } from '@/lib/fonts';
 
 const loginSchema = z.object({
   identifier: z.string().min(1, 'Required'),

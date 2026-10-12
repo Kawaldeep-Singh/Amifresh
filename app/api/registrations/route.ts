@@ -23,7 +23,9 @@ export async function GET(req: Request) {
     // Fetch registrations matching the status
     const requests = await User.find({ status })
       .populate('referredBy', 'name email referralCode')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .select('-password')
+      .lean();
 
     return NextResponse.json({ requests });
   } catch (error: any) {
