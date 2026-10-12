@@ -95,6 +95,7 @@ export const authOptions: NextAuthOptions = {
       // Allows relative callback URLs dynamically without locking to baseUrl
       if (url.startsWith('/')) return url;
       // Allows callback URLs on the same origin or Vercel preview domains
+      // new
       try {
         const urlObj = new URL(url);
         const baseObj = new URL(baseUrl);

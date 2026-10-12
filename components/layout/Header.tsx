@@ -7,6 +7,7 @@ interface HeaderProps {
   onMenuClick: () => void;
 }
 
+// new chnages 
 export function Header({ session, onMenuClick }: HeaderProps) {
   return (
     <header className="bg-surface border-b border-border h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
