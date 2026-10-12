@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,7 @@ import { getAdminDashboardStats } from '@/services/dashboard.service';
 import { UserRole } from '@/models/User';
 
 export default async function TeamDashboard() {
+  await connection();
   const session = await getServerSession(authOptions);
 
   if (!session || (session.user.role !== UserRole.TEAM && session.user.role !== UserRole.ROOT_ADMIN)) {

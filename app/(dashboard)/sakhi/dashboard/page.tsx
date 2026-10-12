@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,7 @@ import { getSakhiDashboardStats } from '@/services/dashboard.service';
 import ReferralLink from '@/components/dashboard/ReferralLink';
 
 export default async function SakhiDashboard() {
+  await connection();
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {

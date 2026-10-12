@@ -1,8 +1,20 @@
+import { connection } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import { UserRole } from '@/types/user';
 import { Users, UserPlus } from 'lucide-react';
 import { getAdminDashboardStats } from '@/services/dashboard.service';
 import Link from 'next/link';
 
 export default async function AdminDashboard() {
+  await connection();
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user.role !== UserRole.ROOT_ADMIN) {
+    redirect('/login');
+  }
+
   const stats = await getAdminDashboardStats();
 
   return (
