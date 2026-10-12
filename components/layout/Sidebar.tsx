@@ -51,6 +51,15 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
 
   const links = role === UserRole.ROOT_ADMIN ? adminLinks : role === UserRole.TEAM ? teamLinks : sakhiLinks;
 
+  const handleSignOut = async () => {
+    try {
+      await signOut({ redirect: false });
+      window.location.href = '/login';
+    } catch {
+      window.location.href = '/login';
+    }
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -109,8 +118,8 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
         </div>
         <div className="flex-shrink-0 flex border-t border-[#1e3b26] p-4">
           <button
-            onClick={() => signOut({ callbackUrl: '/register' })}
-            className="flex-shrink-0 group w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-200 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+            onClick={handleSignOut}
+            className="flex-shrink-0 group w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-200 hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer"
           >
             <LogOut className="mr-4 h-5 w-5 flex-shrink-0 text-gray-300 group-hover:text-red-400" aria-hidden="true" />
             Sign out

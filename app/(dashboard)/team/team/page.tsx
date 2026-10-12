@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   title: 'My Team | Amifresh Team',
 };
 
-// testig
-
 export default async function TeamTeamPage({
   searchParams,
 }: {

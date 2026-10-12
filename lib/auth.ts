@@ -91,9 +91,23 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs dynamically without locking to baseUrl
+      if (url.startsWith('/')) return url;
+      // Allows callback URLs on the same origin or Vercel preview domains
+      try {
+        const urlObj = new URL(url);
+        const baseObj = new URL(baseUrl);
+        if (urlObj.origin === baseObj.origin || urlObj.hostname.endsWith('.vercel.app')) {
+          return url;
+        }
+      } catch {}
+      return baseUrl;
+    },
   },
   pages: {
     signIn: '/login',
+    signOut: '/login',
   },
   session: {
     strategy: 'jwt',
