@@ -1,8 +1,11 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import crypto from 'crypto';
+import { query, execute } from '@/lib/mysql';
 
-export interface IReferralHistory extends Document {
-  referrer: mongoose.Types.ObjectId;
-  referredUser: mongoose.Types.ObjectId;
+export interface IReferralHistory {
+  _id: string;
+  id: string;
+  referrer: any;
+  referredUser: any;
   referralCode: string;
   registrationDate: Date;
   approvalDate?: Date;
@@ -11,21 +14,38 @@ export interface IReferralHistory extends Document {
   updatedAt: Date;
 }
 
-const ReferralHistorySchema: Schema = new Schema(
-  {
-    referrer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    referredUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    referralCode: { type: String, required: true },
-    registrationDate: { type: Date, required: true, default: Date.now },
-    approvalDate: { type: Date },
-    status: { type: String, required: true, default: 'PENDING' },
+export const ReferralHistory = {
+  async create(data: any | any[], opts?: any) {
+    const items = Array.isArray(data) ? data : [data];
+    const results: IReferralHistory[] = [];
+
+    for (const item of items) {
+      const id = item.id || item._id || crypto.randomUUID();
+      const referrer = typeof item.referrer === 'object' ? item.referrer.toString() : item.referrer;
+      const referredUser = typeof item.referredUser === 'object' ? item.referredUser.toString() : item.referredUser;
+
+      await execute(
+        `INSERT INTO referral_histories (id, referrer, referredUser, referralCode, registrationDate, approvalDate, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())`,
+        [id, referrer, referredUser, item.referralCode, item.registrationDate || new Date(), item.status || 'PENDING']
+      );
+
+      results.push({
+        _id: id,
+        id,
+        referrer,
+        referredUser,
+        referralCode: item.referralCode,
+        registrationDate: item.registrationDate || new Date(),
+        approvalDate: new Date(),
+        status: item.status || 'PENDING',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    return Array.isArray(data) ? results : results[0];
   },
-  { timestamps: true }
-);
+};
 
-ReferralHistorySchema.index({ referrer: 1 });
-ReferralHistorySchema.index({ referredUser: 1 });
-ReferralHistorySchema.index({ referralCode: 1 });
-ReferralHistorySchema.index({ createdAt: -1 });
-
-export default mongoose.models.ReferralHistory || mongoose.model<IReferralHistory>('ReferralHistory', ReferralHistorySchema);
+export default ReferralHistory;

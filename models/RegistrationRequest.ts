@@ -1,12 +1,12 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
 export enum RegistrationStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
 
-export interface IRegistrationRequest extends Document {
+export interface IRegistrationRequest {
+  _id: string;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -24,47 +24,25 @@ export interface IRegistrationRequest extends Document {
   aadhaarCardBack?: string;
   passwordHash?: string;
   referralCode?: string;
-  referrer?: mongoose.Types.ObjectId;
+  referrer?: any;
   status: RegistrationStatus;
   rejectionReason?: string;
-  reviewedBy?: mongoose.Types.ObjectId;
+  reviewedBy?: any;
   reviewedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const RegistrationRequestSchema: Schema = new Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, lowercase: true, trim: true },
-    phone: { type: String, required: true, trim: true },
-    dob: { type: String },
-    gender: { type: String },
-    address: { type: String },
-    city: { type: String },
-    state: { type: String },
-    pinCode: { type: String },
-    fatherSpouseName: { type: String },
-    photo: { type: String },
-    panCard: { type: String },
-    aadhaarCard: { type: String },
-    aadhaarCardFront: { type: String },
-    aadhaarCardBack: { type: String },
-    passwordHash: { type: String, required: false },
-    referralCode: { type: String },
-    referrer: { type: Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, enum: Object.values(RegistrationStatus), default: RegistrationStatus.PENDING },
-    rejectionReason: { type: String },
-    reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    reviewedAt: { type: Date },
+export const RegistrationRequest = {
+  async findOne() {
+    return null;
   },
-  { timestamps: true }
-);
+  async find() {
+    return [];
+  },
+  async create(data: any) {
+    return { ...data, id: 'req-' + Date.now() };
+  },
+};
 
-RegistrationRequestSchema.index({ email: 1 });
-RegistrationRequestSchema.index({ phone: 1 });
-RegistrationRequestSchema.index({ referralCode: 1 });
-RegistrationRequestSchema.index({ status: 1 });
-RegistrationRequestSchema.index({ createdAt: -1 });
-
-export default mongoose.models.RegistrationRequest || mongoose.model<IRegistrationRequest>('RegistrationRequest', RegistrationRequestSchema);
+export default RegistrationRequest;

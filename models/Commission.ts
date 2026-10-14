@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import crypto from 'crypto';
+import { queryOne, execute } from '@/lib/mysql';
 
 export enum CommissionStatus {
   PENDING = 'PENDING',
@@ -8,40 +9,78 @@ export enum CommissionStatus {
   REVERSED = 'REVERSED',
 }
 
-export interface ICommission extends Document {
-  user: mongoose.Types.ObjectId;
-  order: mongoose.Types.ObjectId;
+export interface ICommission {
+  _id: string;
+  id: string;
+  user: any;
+  order: any;
   saleAmount: number;
   commissionRate: number;
   commissionAmount: number;
   status: CommissionStatus;
-  approvedBy?: mongoose.Types.ObjectId;
-  paidBy?: mongoose.Types.ObjectId;
+  approvedBy?: any;
+  paidBy?: any;
   approvedAt?: Date;
   paidAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const CommissionSchema: Schema = new Schema(
-  {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    order: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
-    saleAmount: { type: Number, required: true, min: 0 },
-    commissionRate: { type: Number, required: true, min: 0 },
-    commissionAmount: { type: Number, required: true, min: 0 },
-    status: { type: String, enum: Object.values(CommissionStatus), default: CommissionStatus.PENDING },
-    approvedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    paidBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    approvedAt: { type: Date },
-    paidAt: { type: Date },
+export const Commission = {
+  async findById(id: string) {
+    const row = await queryOne<any>('SELECT * FROM commissions WHERE id = ? LIMIT 1', [id]);
+    if (!row) return null;
+    return {
+      ...row,
+      _id: row.id,
+      id: row.id,
+      saleAmount: Number(row.saleAmount || 0),
+      commissionRate: Number(row.commissionRate || 0),
+      commissionAmount: Number(row.commissionAmount || 0),
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    };
   },
-  { timestamps: true }
-);
 
-CommissionSchema.index({ user: 1 });
-CommissionSchema.index({ order: 1 });
-CommissionSchema.index({ status: 1 });
-CommissionSchema.index({ createdAt: -1 });
+  async create(data: any | any[], opts?: any) {
+    const items = Array.isArray(data) ? data : [data];
+    const results: ICommission[] = [];
 
-export default mongoose.models.Commission || mongoose.model<ICommission>('Commission', CommissionSchema);
+    for (const item of items) {
+      const id = item.id || item._id || crypto.randomUUID();
+      const user = typeof item.user === 'object' ? item.user.toString() : item.user;
+      const order = typeof item.order === 'object' ? item.order.toString() : item.order;
+
+      await execute(
+        `INSERT INTO commissions (id, user, \`order\`, saleAmount, commissionRate, commissionAmount, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          id,
+          user,
+          order,
+          Number(item.saleAmount || 0),
+          Number(item.commissionRate || 0),
+          Number(item.commissionAmount || 0),
+          item.status || CommissionStatus.PENDING,
+        ]
+      );
+
+      results.push({
+        _id: id,
+        id,
+        user,
+        order,
+        saleAmount: Number(item.saleAmount || 0),
+        commissionRate: Number(item.commissionRate || 0),
+        commissionAmount: Number(item.commissionAmount || 0),
+        status: item.status || CommissionStatus.PENDING,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    return Array.isArray(data) ? results : results[0];
+  },
+};
+
+export default Commission;

@@ -97,8 +97,8 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
       };
     };
 
-    const rootData = tree[0];
-    const hierarchicalTree = formatTree(rootData, rootData.network);
+    const rootData: any = tree[0];
+    const hierarchicalTree = formatTree(rootData, rootData.network || []);
 
     return NextResponse.json({ tree: hierarchicalTree });
     

@@ -1,79 +1,64 @@
-import mongoose from 'mongoose';
-import Commission, { CommissionStatus } from '@/models/Commission';
-import User from '@/models/User';
-import AuditLog from '@/models/AuditLog';
-import dbConnect from '@/lib/mongodb';
+import crypto from 'crypto';
+import { queryOne, execute, transaction } from '@/lib/mysql';
+
+export enum CommissionStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  PAID = 'PAID',
+  CANCELLED = 'CANCELLED',
+  REVERSED = 'REVERSED',
+}
 
 export async function approveCommission(commissionId: string, adminId: string) {
-  await dbConnect();
-  
-  const commission = await Commission.findById(commissionId);
+  const commission = await queryOne<any>('SELECT * FROM commissions WHERE id = ?', [commissionId]);
   if (!commission) throw new Error('Commission not found');
-  
+
   if (commission.status !== CommissionStatus.PENDING) {
     throw new Error(`Cannot approve commission with status ${commission.status}`);
   }
 
-  commission.status = CommissionStatus.APPROVED;
-  commission.approvedBy = new mongoose.Types.ObjectId(adminId);
-  commission.approvedAt = new Date();
-  
-  await commission.save();
-  
-  await AuditLog.create({
-    performedBy: adminId,
-    action: 'COMMISSION_APPROVED',
-    entityType: 'Commission',
-    entityId: commission._id,
-    description: `Approved commission of ${commission.commissionAmount} for order ${commission.order}`,
-  });
-  
-  return commission;
+  await execute(
+    'UPDATE commissions SET status = ?, approvedBy = ?, approvedAt = NOW(), updatedAt = NOW() WHERE id = ?',
+    [CommissionStatus.APPROVED, adminId, commissionId]
+  );
+
+  const auditId = crypto.randomUUID();
+  await execute(
+    `INSERT INTO audit_logs (id, performedBy, action, entityType, entityId, description, createdAt, updatedAt)
+     VALUES (?, ?, 'COMMISSION_APPROVED', 'Commission', ?, ?, NOW(), NOW())`,
+    [auditId, adminId, commissionId, `Approved commission of ${commission.commissionAmount} for order ${commission.order}`]
+  );
+
+  return { ...commission, status: CommissionStatus.APPROVED };
 }
 
 export async function payCommission(commissionId: string, adminId: string) {
-  await dbConnect();
-  
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  
-  try {
-    const commission = await Commission.findById(commissionId).session(session);
+  return transaction(async (conn) => {
+    const [rows]: any = await conn.execute('SELECT * FROM commissions WHERE id = ?', [commissionId]);
+    const commission = rows && rows.length > 0 ? rows[0] : null;
     if (!commission) throw new Error('Commission not found');
-    
+
     if (commission.status !== CommissionStatus.APPROVED) {
       throw new Error(`Commission must be APPROVED before payment. Current status: ${commission.status}`);
     }
 
-    commission.status = CommissionStatus.PAID;
-    commission.paidBy = new mongoose.Types.ObjectId(adminId);
-    commission.paidAt = new Date();
-    
-    await commission.save({ session });
+    await conn.execute(
+      'UPDATE commissions SET status = ?, paidBy = ?, paidAt = NOW(), updatedAt = NOW() WHERE id = ?',
+      [CommissionStatus.PAID, adminId, commissionId]
+    );
 
-    // Update User's totals
-    await User.findByIdAndUpdate(commission.user, {
-      $inc: { 
-        totalCommission: commission.commissionAmount,
-        totalSales: commission.saleAmount
-      }
-    }, { session });
+    await conn.execute(
+      'UPDATE users SET totalCommission = totalCommission + ?, totalSales = totalSales + ?, updatedAt = NOW() WHERE id = ?',
+      [Number(commission.commissionAmount), Number(commission.saleAmount), commission.user]
+    );
 
-    await AuditLog.create([{
-      performedBy: adminId,
-      action: 'COMMISSION_PAID',
-      entityType: 'Commission',
-      entityId: commission._id,
-      description: `Marked commission of ${commission.commissionAmount} as PAID for order ${commission.order}`,
-    }], { session });
+    const auditId = crypto.randomUUID();
+    await conn.execute(
+      `INSERT INTO audit_logs (id, performedBy, action, entityType, entityId, description, createdAt, updatedAt)
+       VALUES (?, ?, 'COMMISSION_PAID', 'Commission', ?, ?, NOW(), NOW())`,
+      [auditId, adminId, commissionId, `Marked commission of ${commission.commissionAmount} as PAID for order ${commission.order}`]
+    );
 
-    await session.commitTransaction();
-    session.endSession();
-    
-    return commission;
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    throw error;
-  }
+    return { ...commission, status: CommissionStatus.PAID };
+  });
 }

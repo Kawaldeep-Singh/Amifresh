@@ -1,31 +1,43 @@
 require('dotenv').config({ path: '.env.local' });
-const mongoose = require('mongoose');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI);
-  console.log('Connected to MongoDB');
-  
-  const userSchema = new mongoose.Schema({}, { strict: false });
-  const User = mongoose.models.User || mongoose.model('User', userSchema, 'users');
-  
-  const hashedPassword = await bcrypt.hash('admin123', 10);
-  
-  const admin = await User.create({
-    name: 'Root Admin',
-    email: 'admin@amifresh.com',
-    password: hashedPassword,
-    role: 'ROOT_ADMIN',
-    phone: '9999999999',
-    referralCode: 'ADMIN000',
-    status: 'ACTIVE',
-    createdAt: new Date(),
-    updatedAt: new Date()
+  const host = process.env.DB_HOST || 'localhost';
+  const port = Number(process.env.DB_PORT) || 3306;
+  const user = process.env.DB_USER || 'u789152685_amifresh_sakhi';
+  const password = process.env.DB_PASSWORD || 'Amifresh@1234';
+  const database = process.env.DB_NAME || 'u789152685_sakhi_amifresh';
+
+  const connection = await mysql.createConnection({
+    host,
+    port,
+    user,
+    password,
+    database,
   });
-  
-  console.log('Root admin created successfully:', admin._id);
-  
+
+  console.log('Connected to MySQL successfully');
+  const hashedPassword = await bcrypt.hash('admin123', 10);
+
+  await connection.query(`
+    INSERT INTO users (
+      id, name, email, phone, password, loginId,
+      mustChangePassword, role, referralCode, status,
+      commissionRate, totalSales, totalCommission, createdAt, updatedAt
+    ) VALUES (
+      'admin-root-0001', 'Master Admin', 'admin@amifresh.com', '9999999999',
+      ?, 'ADMIN001', 0, 'ROOT_ADMIN', 'AMIFRESH', 'ACTIVE',
+      35.00, 0.00, 0.00, NOW(), NOW()
+    ) ON DUPLICATE KEY UPDATE password = VALUES(password), status = 'ACTIVE'
+  `, [hashedPassword]);
+
+  console.log('Root admin created/updated successfully: admin@amifresh.com / admin123');
+  await connection.end();
   process.exit(0);
 }
 
-run().catch(console.error);
+run().catch((err) => {
+  console.error('Seed admin error:', err.message);
+  process.exit(1);
+});

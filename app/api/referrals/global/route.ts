@@ -81,7 +81,7 @@ export async function GET(req: Request) {
       };
     };
 
-    const formattedTrees = trees.map(treeData => formatTree(treeData, treeData.network));
+    const formattedTrees = (trees as any[]).map((treeData: any) => formatTree(treeData, treeData.network || []));
 
     return NextResponse.json({ trees: formattedTrees });
     

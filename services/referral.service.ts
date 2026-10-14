@@ -1,60 +1,69 @@
-import mongoose from 'mongoose';
-import User, { IUser, UserStatus } from '@/models/User';
-import ReferralHistory from '@/models/ReferralHistory';
-import RegistrationRequest from '@/models/RegistrationRequest';
+import crypto from 'crypto';
+import { query, queryOne, execute } from '@/lib/mysql';
 
 export async function validateReferralCode(code: string): Promise<boolean> {
   if (!code) return false;
-  const user = await User.findOne({ referralCode: code, status: UserStatus.ACTIVE });
+  const user = await queryOne<{ id: string }>(
+    "SELECT id FROM users WHERE referralCode = ? AND status = 'ACTIVE' LIMIT 1",
+    [code.trim()]
+  );
   return !!user;
 }
 
-export async function getReferrerByCode(code: string): Promise<IUser | null> {
+export async function getReferrerByCode(code: string): Promise<any | null> {
   if (!code) return null;
-  return User.findOne({ referralCode: code, status: UserStatus.ACTIVE });
+  const user = await queryOne<any>(
+    "SELECT id, id as _id, name, email, phone, role, status, referralCode FROM users WHERE referralCode = ? AND status = 'ACTIVE' LIMIT 1",
+    [code.trim()]
+  );
+  return user;
 }
 
-export async function getDirectReferrals(userId: string | mongoose.Types.ObjectId): Promise<IUser[]> {
-  return User.find({ referredBy: userId }).select('-password');
+export async function getDirectReferrals(userId: string): Promise<any[]> {
+  const rows = await query<any>(
+    'SELECT id, id as _id, name, email, phone, role, referralCode, status, createdAt FROM users WHERE referredBy = ? ORDER BY createdAt DESC',
+    [userId]
+  );
+  return rows;
 }
 
 export async function createReferralHistory(data: {
-  referrer: mongoose.Types.ObjectId;
-  referredUser: mongoose.Types.ObjectId;
+  referrer: string;
+  referredUser: string;
   referralCode: string;
   status?: string;
-  session?: mongoose.mongo.ClientSession;
 }) {
-  const { referrer, referredUser, referralCode, status = 'APPROVED', session } = data;
-  
-  const history = new ReferralHistory({
-    referrer,
-    referredUser,
-    referralCode,
-    status,
-    approvalDate: new Date(),
-  });
+  const { referrer, referredUser, referralCode, status = 'APPROVED' } = data;
+  const id = crypto.randomUUID();
 
-  return history.save({ session });
+  await execute(
+    `INSERT INTO referral_histories (id, referrer, referredUser, referralCode, status, approvalDate, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NOW())`,
+    [id, referrer, referredUser, referralCode, status]
+  );
+
+  return { id, referrer, referredUser, referralCode, status };
 }
 
 export async function generateUniqueReferralCode(name: string): Promise<string> {
-  const baseCode = name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, '');
+  const baseCode = (name || 'USER').substring(0, 4).toUpperCase().replace(/[^A-Z]/g, '');
   const paddedBase = baseCode.padEnd(4, 'X');
-  
+
   let isUnique = false;
   let code = '';
-  
+
   while (!isUnique) {
     const randomDigits = Math.floor(1000 + Math.random() * 9000).toString();
     code = `${paddedBase}${randomDigits}`;
-    
-    const existingUser = await User.findOne({ referralCode: code });
-    const existingReq = await RegistrationRequest.findOne({ referralCode: code });
-    if (!existingUser && !existingReq) {
+
+    const existingUser = await queryOne<{ id: string }>(
+      'SELECT id FROM users WHERE referralCode = ? LIMIT 1',
+      [code]
+    );
+    if (!existingUser) {
       isUnique = true;
     }
   }
-  
+
   return code;
 }

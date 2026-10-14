@@ -36,7 +36,7 @@ export function Header({ session, onMenuClick }: HeaderProps) {
         </button>
 
         {/* Profile */}
-        <div className="ml-3 relative">
+        {/* <div className="ml-3 relative">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-medium">
               {session?.user?.name?.charAt(0) || 'U'}
@@ -46,7 +46,7 @@ export function Header({ session, onMenuClick }: HeaderProps) {
               <p className="text-xs text-text-muted capitalize">{session?.user?.role.toLowerCase()}</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </header>
   );

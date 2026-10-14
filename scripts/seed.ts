@@ -1,49 +1,49 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
+import { execute, query } from '../lib/mysql';
 import User, { UserRole, UserStatus } from '../models/User';
 import Setting from '../models/Setting';
 
 async function seed() {
-  const MONGODB_URI = process.env.MONGODB_URI;
-
-  if (!MONGODB_URI) {
-    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-  }
-
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log('Connecting to MySQL & seeding data...');
 
-    // Clean existing users for a fresh seed (Optional - use with caution!)
-    await User.deleteMany({});
-    await Setting.deleteMany({});
+    // Clear existing data (optional/fresh seed)
+    await execute('DELETE FROM users');
+    await execute('DELETE FROM settings');
+    await execute('DELETE FROM products');
+    await execute('DELETE FROM orders');
+    await execute('DELETE FROM commissions');
+    await execute('DELETE FROM audit_logs');
+    await execute('DELETE FROM referral_histories');
     console.log('Cleared existing data');
 
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash('admin123', 10);
 
     // Create Root Admin
     const rootAdmin = await User.create({
+      id: 'admin-root-0001',
       name: 'Master Admin',
       email: 'admin@amifresh.com',
       phone: '9999999999',
       password: hashedPassword,
+      loginId: 'ADMIN001',
       role: UserRole.ROOT_ADMIN,
       referralCode: 'AMIFRESH',
       status: UserStatus.ACTIVE,
     });
-    console.log('Root Admin created:', rootAdmin.email);
+    console.log('Root Admin created: admin@amifresh.com (password: admin123)');
 
     // Create Settings
     await Setting.create({
       key: 'DEFAULT_COMMISSION_RATE',
       value: 35,
       description: 'Default commission rate for products in percentage',
-      updatedBy: rootAdmin._id,
+      updatedBy: rootAdmin.id,
     });
 
     // Create Teams
@@ -52,9 +52,10 @@ async function seed() {
       email: 'amit@example.com',
       phone: '8888888881',
       password: hashedPassword,
+      loginId: 'EMP888881',
       role: UserRole.TEAM,
       referralCode: 'AMIT8395',
-      referredBy: rootAdmin._id,
+      referredBy: rootAdmin.id,
       status: UserStatus.ACTIVE,
     });
 
@@ -63,9 +64,10 @@ async function seed() {
       email: 'raj@example.com',
       phone: '8888888882',
       password: hashedPassword,
+      loginId: 'EMP888882',
       role: UserRole.TEAM,
       referralCode: 'RAJM1234',
-      referredBy: rootAdmin._id,
+      referredBy: rootAdmin.id,
       status: UserStatus.ACTIVE,
     });
     console.log('Teams created');
@@ -76,9 +78,10 @@ async function seed() {
       email: 'kawal@example.com',
       phone: '7777777771',
       password: hashedPassword,
+      loginId: 'SAKHI777771',
       role: UserRole.SAKHI,
       referralCode: 'KAWA8395',
-      referredBy: team1._id,
+      referredBy: team1.id,
       status: UserStatus.ACTIVE,
     });
 
@@ -87,15 +90,15 @@ async function seed() {
       email: 'laljeet@example.com',
       phone: '7777777772',
       password: hashedPassword,
+      loginId: 'SAKHI777772',
       role: UserRole.SAKHI,
       referralCode: 'LALJ7824',
-      referredBy: sakhi1._id,
+      referredBy: sakhi1.id,
       status: UserStatus.ACTIVE,
     });
-    
-    console.log('Sakhi created');
-    console.log('Seed completed successfully!');
 
+    console.log('Sakhi created');
+    console.log('Seed completed successfully for MySQL!');
     process.exit(0);
   } catch (error) {
     console.error('Error seeding data:', error);

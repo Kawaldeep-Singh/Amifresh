@@ -1,68 +1,52 @@
-import connectDB from '@/lib/mongodb';
-import User, { UserRole, UserStatus } from '@/models/User';
-import RegistrationRequest, { RegistrationStatus } from '@/models/RegistrationRequest';
-import mongoose from 'mongoose';
+import { queryOne } from '@/lib/mysql';
 
 export async function getAdminDashboardStats() {
-  await connectDB();
+  const row = await queryOne<any>(`
+    SELECT
+      COUNT(*) as totalUsers,
+      COALESCE(SUM(CASE WHEN role = 'SAKHI' AND status = 'ACTIVE' THEN 1 ELSE 0 END), 0) as activeSakhis,
+      COALESCE(SUM(CASE WHEN role = 'SAKHI' THEN 1 ELSE 0 END), 0) as totalSakhis,
+      COALESCE(SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END), 0) as pendingRegistrations,
+      COALESCE(SUM(CASE WHEN role = 'TEAM' AND status = 'ACTIVE' THEN 1 ELSE 0 END), 0) as totalTeams
+    FROM users
+  `);
 
-  const results = await User.aggregate([
-    {
-      $facet: {
-        totalUsers: [{ $count: 'count' }],
-        activeSakhis: [
-          { $match: { role: UserRole.SAKHI, status: UserStatus.ACTIVE } },
-          { $count: 'count' },
-        ],
-        totalSakhis: [
-          { $match: { role: UserRole.SAKHI } },
-          { $count: 'count' },
-        ],
-        pendingRegistrations: [
-          { $match: { status: UserStatus.PENDING } },
-          { $count: 'count' },
-        ],
-        totalTeams: [
-          { $match: { role: UserRole.TEAM, status: UserStatus.ACTIVE } },
-          { $count: 'count' },
-        ],
-      },
-    },
-  ]);
-
-  const facet = results[0] || {};
   return {
-    totalUsers: facet.totalUsers?.[0]?.count || 0,
-    activeSakhis: facet.activeSakhis?.[0]?.count || 0,
-    totalSakhis: facet.totalSakhis?.[0]?.count || 0,
-    pendingRegistrations: facet.pendingRegistrations?.[0]?.count || 0,
-    totalTeams: facet.totalTeams?.[0]?.count || 0,
+    totalUsers: Number(row?.totalUsers || 0),
+    activeSakhis: Number(row?.activeSakhis || 0),
+    totalSakhis: Number(row?.totalSakhis || 0),
+    pendingRegistrations: Number(row?.pendingRegistrations || 0),
+    totalTeams: Number(row?.totalTeams || 0),
   };
 }
 
 export async function getSakhiDashboardStats(userId: string) {
-  await connectDB();
-
-  // Find user to verify with lean query
-  const user = await User.findById(userId).select('status totalCommission totalSales').lean();
+  const user = await queryOne<any>(
+    'SELECT id, status, totalCommission, totalSales FROM users WHERE id = ?',
+    [userId]
+  );
   if (!user) throw new Error('User not found');
 
-  // Direct referrals
-  const directReferrals = await User.countDocuments({ referredBy: userId });
+  const dirRow = await queryOne<{ count: number }>(
+    'SELECT COUNT(*) as count FROM users WHERE referredBy = ?',
+    [userId]
+  );
+  const directReferrals = Number(dirRow?.count || 0);
 
-  // Indirect referrals
-  const directReferralDocs = await User.find({ referredBy: userId }).select('_id').lean();
-  const directReferralIds = directReferralDocs.map((doc: any) => doc._id);
-  const indirectReferrals = directReferralIds.length > 0
-    ? await User.countDocuments({ referredBy: { $in: directReferralIds } })
-    : 0;
+  const indRow = await queryOne<{ count: number }>(
+    `SELECT COUNT(*) as count FROM users WHERE referredBy IN (
+      SELECT id FROM users WHERE referredBy = ?
+    )`,
+    [userId]
+  );
+  const indirectReferrals = Number(indRow?.count || 0);
 
   return {
     directReferrals,
     indirectReferrals,
     totalNetwork: directReferrals + indirectReferrals,
     status: user.status,
-    totalCommission: user.totalCommission || 0,
-    totalSales: user.totalSales || 0,
+    totalCommission: Number(user.totalCommission || 0),
+    totalSales: Number(user.totalSales || 0),
   };
 }

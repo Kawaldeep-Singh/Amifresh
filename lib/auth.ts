@@ -1,7 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import dbConnect from './mongodb';
-import User from '@/models/User';
+import { queryOne } from './mysql';
 import { verifyPassword } from './auth/password';
 
 export const authOptions: NextAuthOptions = {
@@ -17,14 +16,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Please provide both login ID and password');
         }
 
-        await dbConnect();
-
-        const user = await User.findOne({ 
-          $or: [
-            { email: credentials.loginId },
-            { loginId: credentials.loginId }
-          ]
-        }).select('+password +mustChangePassword');
+        const user = await queryOne<any>(
+          'SELECT id, name, email, role, status, referralCode, password, mustChangePassword FROM users WHERE email = ? OR loginId = ? LIMIT 1',
+          [credentials.loginId, credentials.loginId]
+        );
 
         if (!user) {
           throw new Error('Invalid login ID or password');
@@ -46,20 +41,20 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Your registration is pending approval');
         }
 
-        const isPasswordMatch = await verifyPassword(credentials.password, user.password!);
+        const isPasswordMatch = await verifyPassword(credentials.password, user.password || '');
 
         if (!isPasswordMatch) {
           throw new Error('Invalid login ID or password');
         }
 
         return {
-          id: user._id.toString(),
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
           status: user.status,
           referralCode: user.referralCode,
-          mustChangePassword: user.mustChangePassword,
+          mustChangePassword: Boolean(user.mustChangePassword),
         };
       },
     }),
@@ -92,14 +87,15 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs dynamically without locking to baseUrl
       if (url.startsWith('/')) return url;
-      // Allows callback URLs on the same origin or Vercel preview domains
-      // new
       try {
         const urlObj = new URL(url);
         const baseObj = new URL(baseUrl);
-        if (urlObj.origin === baseObj.origin || urlObj.hostname.endsWith('.vercel.app')) {
+        if (
+          urlObj.origin === baseObj.origin || 
+          urlObj.hostname.endsWith('.vercel.app') || 
+          urlObj.hostname.endsWith('amifresh.in')
+        ) {
           return url;
         }
       } catch {}
