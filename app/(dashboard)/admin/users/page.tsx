@@ -6,7 +6,7 @@ import { UserRole } from '@/types/user';
 import connectDB from '@/lib/mongodb';
 import { getUsers, getAdminUserStats } from '@/services/user.service';
 import Link from 'next/link';
-import { Search, Filter, Eye, MoreVertical, ShieldAlert, CheckCircle, Ban, Clock } from 'lucide-react';
+import { Search, Filter, Eye, MoreVertical, ShieldAlert, CheckCircle, Ban, Clock, Briefcase, HeartHandshake, Users } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import UserTableActions from './UserTableActions';
 
@@ -49,6 +49,30 @@ export default async function AdminUsersPage({
         </div>
       </div>
 
+      {/* Category Switcher Tabs */}
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-3">
+        <Link
+          href="/admin/employees"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors shadow-sm"
+        >
+          <Briefcase size={16} />
+          <span>Employees ({stats.teams})</span>
+        </Link>
+        <Link
+          href="/admin/sakhi"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors shadow-sm"
+        >
+          <HeartHandshake size={16} />
+          <span>Sakhi ({stats.sakhis})</span>
+        </Link>
+        <span
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-primary shadow-sm"
+        >
+          <Users size={16} />
+          <span>All Accounts ({stats.total})</span>
+        </span>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Link href="/admin/users" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
           <div className="text-sm text-gray-500 group-hover:text-primary-dark">Total Users</div>
@@ -63,7 +87,7 @@ export default async function AdminUsersPage({
           <div className="text-2xl font-extrabold text-accent">{stats.teams}</div>
         </Link>
         <Link href="/admin/users?role=SAKHI" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary hover:bg-primary-light transition-all hover:shadow-md cursor-pointer block group">
-          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Sakhis</div>
+          <div className="text-sm text-gray-500 group-hover:text-primary-dark">Sakhi</div>
           <div className="text-2xl font-extrabold text-primary-dark">{stats.sakhis}</div>
         </Link>
         <Link href="/admin/users?status=BLOCKED" className="bg-white p-4 rounded-xl border border-border shadow-sm hover:border-danger hover:bg-red-50 transition-all hover:shadow-md cursor-pointer block group">

@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     
     const { 
       name, email, phone, referralCode, 
-      dob, gender, address, city, state, pinCode, fatherSpouseName,
-      photo, panCard, aadhaarCard
+      dob, address, city, state, pinCode, fatherSpouseName,
+      photo, panCard, aadhaarCard, aadhaarCardFront, aadhaarCardBack
     } = result.data;
     
     await dbConnect();
@@ -54,7 +54,6 @@ export async function POST(req: Request) {
       status: 'PENDING',
       role: 'SAKHI',
       dob,
-      gender,
       address,
       city,
       state,
@@ -62,7 +61,9 @@ export async function POST(req: Request) {
       fatherSpouseName,
       photo,
       panCard,
-      aadhaarCard,
+      aadhaarCard: aadhaarCardFront || aadhaarCard,
+      aadhaarCardFront,
+      aadhaarCardBack,
     });
 
     return NextResponse.json({

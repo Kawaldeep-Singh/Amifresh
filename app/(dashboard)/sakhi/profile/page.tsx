@@ -59,10 +59,6 @@ export default async function ProfilePage() {
                   <dd className="mt-1 text-sm text-gray-900">{user.dob || 'N/A'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Gender</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{user.gender || 'N/A'}</dd>
-                </div>
-                <div>
                   <dt className="text-sm font-medium text-gray-500">Address</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {user.address ? `${user.address}, ${user.city || ''}, ${user.state || ''} - ${user.pinCode || ''}` : 'N/A'}

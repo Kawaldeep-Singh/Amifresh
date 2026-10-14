@@ -70,7 +70,7 @@ async function seed() {
     });
     console.log('Teams created');
 
-    // Create Sakhis
+    // Create Sakhi
     const sakhi1 = await User.create({
       name: 'Kawal Sakhi',
       email: 'kawal@example.com',
@@ -93,7 +93,7 @@ async function seed() {
       status: UserStatus.ACTIVE,
     });
     
-    console.log('Sakhis created');
+    console.log('Sakhi created');
     console.log('Seed completed successfully!');
 
     process.exit(0);

@@ -63,7 +63,7 @@ export default function SakhiNetworkPage() {
   }, [session]);
 
   const referralLink = typeof window !== 'undefined' && treeData 
-    ? `${window.location.origin}/register?ref=${treeData.referralCode}`
+    ? `${window.location.origin}/join?ref=${treeData.referralCode}`
     : '';
 
   const copyToClipboard = () => {
@@ -81,7 +81,7 @@ export default function SakhiNetworkPage() {
           My Network Tree
         </h1>
         <p className="text-sm text-gray-600 mt-1">
-          Visual representation of your referred sakhis and their downline.
+          Visual representation of your referred Sakhi network and downline.
         </p>
       </div>
 

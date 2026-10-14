@@ -214,7 +214,6 @@ export default function RegistrationsPage() {
                     <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{selectedRequest.phone}</span></p>
                     <p><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedRequest.email}</span></p>
                     <p><span className="text-gray-500">DOB:</span> <span className="font-medium">{selectedRequest.dob || 'N/A'}</span></p>
-                    <p><span className="text-gray-500">Gender:</span> <span className="font-medium">{selectedRequest.gender || 'N/A'}</span></p>
                     <p><span className="text-gray-500">Father/Spouse:</span> <span className="font-medium">{selectedRequest.fatherSpouseName || 'N/A'}</span></p>
                   </div>
                 </div>
@@ -232,10 +231,10 @@ export default function RegistrationsPage() {
 
               <div className="mt-8">
                 <h3 className="text-sm font-semibold text-primary-dark uppercase mb-3 border-b pb-2">Documents</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {['photo', 'panCard', 'aadhaarCard'].map(docType => {
-                    const docValue = selectedRequest[docType];
-                    const labels: any = { photo: 'Profile Photo', panCard: 'PAN Card', aadhaarCard: 'Aadhaar Card' };
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {['photo', 'panCard', 'aadhaarCardFront', 'aadhaarCardBack'].map(docType => {
+                    const docValue = selectedRequest[docType] || (docType === 'aadhaarCardFront' ? selectedRequest.aadhaarCard : null);
+                    const labels: any = { photo: 'Profile Photo', panCard: 'PAN Card', aadhaarCardFront: 'Aadhaar (Front)', aadhaarCardBack: 'Aadhaar (Back)' };
                     return (
                       <div key={docType} className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex flex-col items-center justify-center text-center">
                         <span className="text-xs font-semibold text-gray-500 uppercase mb-2">{labels[docType]}</span>

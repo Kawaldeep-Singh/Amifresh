@@ -6,7 +6,6 @@ export const registrationSchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian phone number').trim(),
   referralCode: z.string().toUpperCase().trim().optional(),
   dob: z.string().optional(),
-  gender: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -15,6 +14,8 @@ export const registrationSchema = z.object({
   photo: z.string().optional(),
   panCard: z.string().optional(),
   aadhaarCard: z.string().optional(),
+  aadhaarCardFront: z.string().optional(),
+  aadhaarCardBack: z.string().optional(),
 });
 
 export const approveRegistrationSchema = z.object({

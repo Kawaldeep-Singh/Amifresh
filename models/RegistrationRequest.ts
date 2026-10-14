@@ -20,6 +20,8 @@ export interface IRegistrationRequest extends Document {
   photo?: string;
   panCard?: string;
   aadhaarCard?: string;
+  aadhaarCardFront?: string;
+  aadhaarCardBack?: string;
   passwordHash?: string;
   referralCode?: string;
   referrer?: mongoose.Types.ObjectId;
@@ -46,6 +48,8 @@ const RegistrationRequestSchema: Schema = new Schema(
     photo: { type: String },
     panCard: { type: String },
     aadhaarCard: { type: String },
+    aadhaarCardFront: { type: String },
+    aadhaarCardBack: { type: String },
     passwordHash: { type: String, required: false },
     referralCode: { type: String },
     referrer: { type: Schema.Types.ObjectId, ref: 'User' },

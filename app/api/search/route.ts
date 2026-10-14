@@ -34,13 +34,15 @@ export async function GET(request: Request) {
     routes.push({ title: 'My Profile', href: `${rolePrefix}/profile` });
 
     if (session.user.role === UserRole.ROOT_ADMIN) {
+      routes.push({ title: 'Employees', href: '/admin/employees' });
+      routes.push({ title: 'Sakhi', href: '/admin/sakhi' });
       routes.push({ title: 'User Management', href: '/admin/users' });
       routes.push({ title: 'Registrations', href: '/admin/registrations' });
       routes.push({ title: 'Product Management', href: '/admin/products' });
       routes.push({ title: 'Order Management', href: '/admin/orders' });
-      routes.push({ title: 'Commission Settings', href: '/admin/settings' });
-      routes.push({ title: 'Audit Logs', href: '/admin/audit-logs' });
-      routes.push({ title: 'Reports', href: '/admin/reports' });
+      // routes.push({ title: 'Commission Settings', href: '/admin/settings' });
+      // routes.push({ title: 'Audit Logs', href: '/admin/audit-logs' });
+      // routes.push({ title: 'Reports', href: '/admin/reports' });
     } else if (session.user.role === UserRole.TEAM) {
       routes.push({ title: 'My Team', href: '/team/team' });
       routes.push({ title: 'Sales', href: '/team/sales' });

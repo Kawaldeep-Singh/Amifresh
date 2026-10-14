@@ -39,6 +39,8 @@ export interface IUser extends Document {
   photo?: string;
   panCard?: string;
   aadhaarCard?: string;
+  aadhaarCardFront?: string;
+  aadhaarCardBack?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,6 +71,8 @@ const UserSchema: Schema = new Schema(
     photo: { type: String },
     panCard: { type: String },
     aadhaarCard: { type: String },
+    aadhaarCardFront: { type: String },
+    aadhaarCardBack: { type: String },
   },
   { timestamps: true }
 );

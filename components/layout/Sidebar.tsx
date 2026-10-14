@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UserPlus, Network, Package, ShoppingCart, IndianRupee, FileText, Activity, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Network, Package, ShoppingCart, IndianRupee, FileText, Activity, Settings, LogOut, X, Briefcase, HeartHandshake } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { UserRole } from '@/types/user';
 
@@ -18,14 +18,15 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
 
   const adminLinks = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Users', href: '/admin/users', icon: Users },
+    { name: 'Sakhi', href: '/admin/sakhi', icon: HeartHandshake },
+    { name: 'Employees', href: '/admin/employees', icon: Briefcase },
     { name: 'Registrations', href: '/admin/registrations', icon: UserPlus },
     { name: 'Network', href: '/admin/network', icon: Network },
-    { name: 'Products', href: '/admin/products', icon: Package },
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-    { name: 'Commissions', href: '/admin/commissions', icon: IndianRupee },
-    { name: 'Reports', href: '/admin/reports', icon: FileText },
-    { name: 'Audit Logs', href: '/admin/audit-logs', icon: Activity },
+    // { name: 'Products', href: '/admin/products', icon: Package },
+    // { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+    // { name: 'Commissions', href: '/admin/commissions', icon: IndianRupee },
+    // { name: 'Reports', href: '/admin/reports', icon: FileText },
+    // { name: 'Audit Logs', href: '/admin/audit-logs', icon: Activity },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

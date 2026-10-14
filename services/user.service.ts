@@ -194,3 +194,49 @@ export async function getAdminUserStats() {
     pending: f.pending?.[0]?.count || 0,
   };
 }
+
+export async function getEmployeeStats() {
+  const results = await User.aggregate([
+    { $match: { role: UserRole.TEAM } },
+    {
+      $facet: {
+        total: [{ $count: 'count' }],
+        active: [{ $match: { status: UserStatus.ACTIVE } }, { $count: 'count' }],
+        inactive: [{ $match: { status: UserStatus.INACTIVE } }, { $count: 'count' }],
+        blocked: [{ $match: { status: UserStatus.BLOCKED } }, { $count: 'count' }],
+      },
+    },
+  ]);
+
+  const f = results[0] || {};
+  return {
+    total: f.total?.[0]?.count || 0,
+    active: f.active?.[0]?.count || 0,
+    inactive: f.inactive?.[0]?.count || 0,
+    blocked: f.blocked?.[0]?.count || 0,
+  };
+}
+
+export async function getSakhiStats() {
+  const results = await User.aggregate([
+    { $match: { role: UserRole.SAKHI } },
+    {
+      $facet: {
+        total: [{ $count: 'count' }],
+        active: [{ $match: { status: UserStatus.ACTIVE } }, { $count: 'count' }],
+        inactive: [{ $match: { status: UserStatus.INACTIVE } }, { $count: 'count' }],
+        blocked: [{ $match: { status: UserStatus.BLOCKED } }, { $count: 'count' }],
+        pending: [{ $match: { status: UserStatus.PENDING } }, { $count: 'count' }],
+      },
+    },
+  ]);
+
+  const f = results[0] || {};
+  return {
+    total: f.total?.[0]?.count || 0,
+    active: f.active?.[0]?.count || 0,
+    inactive: f.inactive?.[0]?.count || 0,
+    blocked: f.blocked?.[0]?.count || 0,
+    pending: f.pending?.[0]?.count || 0,
+  };
+}

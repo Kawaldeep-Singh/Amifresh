@@ -7,7 +7,7 @@ export default function ReferralLink({ referralCode }: { referralCode: string })
   const [copied, setCopied] = useState(false);
   const copyToClipboard = () => {
     if (typeof window === 'undefined') return;
-    const referralLink = `${window.location.origin}/register?ref=${referralCode}`;
+    const referralLink = `${window.location.origin}/join?ref=${referralCode}`;
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -18,7 +18,7 @@ export default function ReferralLink({ referralCode }: { referralCode: string })
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Referral Link</h2>
       <div className="flex items-center gap-4">
         <div className="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200 font-mono text-sm text-gray-700 truncate">
-          {typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${referralCode}` : 'Loading...'}
+          {typeof window !== 'undefined' ? `${window.location.origin}/join?ref=${referralCode}` : 'Loading...'}
         </div>
         <button 
           onClick={copyToClipboard}

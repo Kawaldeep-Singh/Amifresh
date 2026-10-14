@@ -19,6 +19,9 @@ export async function changeUserStatus(userId: string, newStatus: UserStatus, re
     await updateUserStatus(userId, newStatus, session.user.id, reason);
     revalidatePath(`/admin/users/${userId}`);
     revalidatePath(`/admin/users`);
+    revalidatePath(`/admin/employees`);
+    revalidatePath(`/admin/sakhi`);
+    revalidatePath(`/admin/sakhis`);
     return { success: true };
   } catch (error: any) {
     return { error: error.message || 'Failed to update status' };

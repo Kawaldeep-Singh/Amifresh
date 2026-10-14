@@ -53,14 +53,20 @@ export default async function AdminUserDetailsPage({
     }
   };
 
+  const backHref = user.role === 'TEAM' ? '/admin/employees' : user.role === 'SAKHI' ? '/admin/sakhi' : '/admin/users';
+  const roleLabel = user.role === 'TEAM' ? 'Employees' : user.role === 'SAKHI' ? 'Sakhi' : 'Users';
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header Navigation */}
       <div className="flex items-center gap-4 mb-2">
-        <Link href="/admin/users" className="p-2 border rounded-full bg-white hover:bg-gray-50 text-gray-600 shadow-sm transition-all hover:shadow">
+        <Link href={backHref} className="p-2 border rounded-full bg-white hover:bg-gray-50 text-gray-600 shadow-sm transition-all hover:shadow" title={`Back to ${roleLabel}`}>
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">User Profile</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">User Profile</h1>
+          <p className="text-xs text-gray-500">Back to <Link href={backHref} className="text-primary hover:underline font-medium">{roleLabel}</Link></p>
+        </div>
       </div>
 
       {/* Profile Banner & Info */}
@@ -133,10 +139,6 @@ export default async function AdminUserDetailsPage({
             <div>
               <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
               <dd className="mt-1 text-sm text-gray-900">{user.dob || 'N/A'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Gender</dt>
-              <dd className="mt-1 text-sm text-gray-900">{user.gender || 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Address</dt>

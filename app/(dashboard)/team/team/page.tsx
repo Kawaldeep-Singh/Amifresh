@@ -58,7 +58,7 @@ export default async function TeamTeamPage({
           <div className="text-2xl font-bold">{stats.total}</div>
         </div>
         <div className="bg-white p-4 rounded-xl border shadow-sm">
-          <div className="text-sm text-gray-500">Active Sakhis</div>
+          <div className="text-sm text-gray-500">Active Sakhi</div>
           <div className="text-2xl font-bold text-green-600">{stats.active}</div>
         </div>
         <div className="bg-white p-4 rounded-xl border shadow-sm">
@@ -126,7 +126,7 @@ export default async function TeamTeamPage({
               {team.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No team sakhis found matching your criteria.
+                    No team Sakhi found matching your criteria.
                   </td>
                 </tr>
               ) : team.map((user: any) => (
@@ -165,7 +165,7 @@ export default async function TeamTeamPage({
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              Showing page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span> ({total} team sakhis)
+              Showing page <span className="font-medium">{page}</span> of <span className="font-medium">{totalPages}</span> ({total} team Sakhi)
             </div>
             <div className="flex gap-2">
               {page > 1 && (

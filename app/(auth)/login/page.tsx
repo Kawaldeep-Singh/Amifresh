@@ -9,32 +9,22 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signIn, getSession } from 'next-auth/react';
 import {
-  User, Lock, Eye, EyeOff
+  User, Lock, Eye, EyeOff, ShieldCheck, ArrowRight
 } from 'lucide-react';
-import { poppins, nunito, caveat } from '@/lib/fonts';
+import { poppins, nunito } from '@/lib/fonts';
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, 'Required'),
+  identifier: z.string().min(1, 'Login ID or Mobile Number is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-// Social SVGs
-const Facebook = ({ size = 24 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
-);
-const Instagram = ({ size = 24 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
-);
-const Twitter = ({ size = 24 }: { size?: number }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" /></svg>
-);
-
 export default function LoginPage() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
@@ -47,8 +37,6 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
-
-  const [errorMsg, setErrorMsg] = useState('');
 
   const onSubmit = async (data: LoginFormValues) => {
     setErrorMsg('');
@@ -75,183 +63,198 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (error) {
-      setErrorMsg('An unexpected error occurred');
+      setErrorMsg('An unexpected error occurred during login. Please try again.');
     }
   };
 
   if (!isMounted) return null;
 
   return (
-    <div>
-      <div className={`min-h-screen flex flex-col lg:flex-row ${nunito.className} bg-[#FFF5E4] overflow-hidden`}>
-
-        {/* Global Styles for Animations */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes sway { 0%, 100% { transform: rotate(-6deg) translateY(0); } 50% { transform: rotate(6deg) translateY(-10px); } }
-          @keyframes swayRight { 0%, 100% { transform: rotate(6deg) scaleX(-1) translateY(0); } 50% { transform: rotate(-6deg) scaleX(-1) translateY(-10px); } }
-          @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
-          .animate-sway { animation: sway 8s ease-in-out infinite; transform-origin: center; }
-          .animate-sway-right { animation: swayRight 9s ease-in-out infinite; transform-origin: center; }
-          .animate-slide-up { animation: slideUpFade 0.6s ease-out forwards; }
-          
-          .input-field {
-            height: 46px; border-radius: 12px; border: 1.5px solid #E5E5E5;
-            background-color: #FFFBF2; color: #111111; transition: all 0.2s; padding-left: 2.5rem; font-size: 0.875rem;
+    <div className={`${nunito.className} relative`}>
+      <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#FFFDF7] text-[#1F2937] relative flex flex-col justify-between selection:bg-[#8BC34A]/30 selection:text-[#1B7F4B]">
+        
+        {/* Clean Input CSS */}
+        <style dangerouslySetInnerHTML={{__html: `
+          .clean-input {
+            height: 46px;
+            border-radius: 12px;
+            border: 1.5px solid #E8DEC8;
+            background-color: #FFFFFF;
+            color: #1F2937;
+            transition: all 0.2s ease;
+            padding-left: 2.5rem;
+            padding-right: 2.5rem;
+            font-size: 0.875rem;
+            width: 100%;
           }
-          .input-field:focus { outline: none; border-color: #FDB94E; box-shadow: 0 0 0 4px rgba(253, 185, 78, 0.15); }
+          .clean-input:focus {
+            outline: none;
+            border-color: #1B7F4B;
+            box-shadow: 0 0 0 3px rgba(27, 127, 75, 0.12);
+          }
         `}} />
 
-        {/* Decorative Falling Leaves */}
-        <img src="/Leaf.webp" className="absolute top-[10%] left-[5%] w-16 opacity-20 animate-sway pointer-events-none hidden lg:block" alt="" />
-        <img src="/Leaf.webp" className="absolute top-[60%] left-[30%] w-24 opacity-10 animate-sway pointer-events-none hidden lg:block" style={{ animationDelay: '2s' }} alt="" />
-        <img src="/Leaf.webp" className="absolute top-[20%] right-[10%] w-20 opacity-20 animate-sway-right pointer-events-none hidden lg:block" style={{ animationDelay: '1s' }} alt="" />
-        <img src="/Leaf.webp" className="absolute bottom-[10%] left-[2%] w-32 opacity-30 animate-sway pointer-events-none hidden lg:block" style={{ animationDelay: '3s' }} alt="" />
+        {/* Decorative Corner Leaf at Bottom Left (-10% size, 50% opacity reduced) */}
+        <div className="fixed bottom-0 left-[-15px] pointer-events-none z-0 hidden lg:block select-none opacity-40">
+          <img src="/left_leaf.webp" alt="AmiFresh Left Leaf" className="w-[170px] xl:w-[215px] drop-shadow-md" />
+        </div>
 
-        {/* LEFT PANEL */}
-        <div className="w-full lg:w-[38%] p-6 lg:p-12 xl:p-16 flex flex-col justify-between relative z-10 min-h-[30vh] lg:h-screen lg:sticky top-0 border-b lg:border-b-0 border-[#FFE3A8]">
-          <div>
-            <div className="flex items-center gap-6 mb-10">
-              <div className="relative w-56 h-20 sm:w-72 sm:h-28">
-                <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" />
-              </div>
-              <div className="w-px h-12 bg-black/10"></div>
-              <div className="relative w-40 h-20 sm:w-56 sm:h-28">
-                <Image src="/Sakhi%20Light.webp" alt="Sakhi" fill className="object-contain object-left" />
-              </div>
+        {/* Decorative Corner Leaf at Bottom Right (-10% size, 50% opacity reduced) */}
+        <div className="fixed bottom-0 right-[-15px] pointer-events-none z-0 hidden lg:block select-none opacity-40">
+          <img src="/right_leaf.webp" alt="AmiFresh Right Leaf" className="w-[170px] xl:w-[215px] drop-shadow-md" />
+        </div>
+
+        {/* Top Header with Logos (Top Left & Top Right) */}
+        <header className="w-full flex items-center justify-between px-6 sm:px-10 lg:px-14 pt-4 sm:pt-6 z-20 flex-shrink-0">
+          {/* 👈 Top Left: AmiFresh Logo */}
+          <Link href="/" className="inline-block group">
+            <div className="relative w-40 sm:w-52 lg:w-60 h-12 sm:h-16 hover:scale-105 transition-transform duration-300">
+              <Image 
+                src="/dark-logo.webp" 
+                alt="AmiFresh" 
+                fill 
+                className="object-contain object-left" 
+                priority 
+              />
             </div>
+          </Link>
 
-            <p className={`${caveat.className} text-[#0B6B2E] text-2xl mb-8 tracking-wide`}>Purity at your doorstep</p>
+          {/* 👉 Top Right: Sakhi Logo */}
+          <div className="relative w-36 sm:w-48 lg:w-56 h-12 sm:h-16 hover:scale-105 transition-transform duration-300">
+            <Image 
+              src="/Sakhi Light.webp" 
+              alt="Sakhi Program" 
+              fill 
+              className="object-contain object-right" 
+              priority 
+            />
+          </div>
+        </header>
 
-            <div className={`${poppins.className} mb-8`}>
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-[#111111] leading-tight mb-2">Work From Home</h1>
-              <h2 className="text-2xl lg:text-3xl font-bold text-[#111111] mb-4">
-                Earn up to <span className="text-[#0F8A3C]">₹75,000*</span>/Month
+        {/* 🎯 Main Area: Login Card in the Center of the Screen (Shifted up by ~16-20px) */}
+        <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 flex items-center justify-center z-10 relative">
+          <div className="w-full max-w-[460px] xl:max-w-[490px] bg-white rounded-3xl border-[1.5px] border-[#E0D3BC] shadow-[0_24px_70px_rgba(0,0,0,0.09)] overflow-hidden flex flex-col -translate-y-4 sm:-translate-y-5">
+            
+            {/* Centered Fixed Header */}
+            <div className="px-6 sm:px-8 py-5 border-b border-[#F0E6D4] bg-gradient-to-r from-[#FFFDF8] via-[#FFF9EE] to-[#F1FAF3] flex flex-col items-center justify-center text-center flex-shrink-0">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FF9F1C] text-[#1F2937] text-[11px] font-black uppercase tracking-wider mb-2 shadow-2xs">
+                <Image src="/icon-leaf.webp" alt="" width={12} height={12} className="object-contain" />
+                <span>Women Exclusive</span>
+              </div>
+              <h2 className={`${poppins.className} text-xl sm:text-2xl font-black text-[#1F2937]`}>
+                Sakhi Partner Login
               </h2>
-              <p className="text-[#6B6B6B] text-lg font-medium max-w-sm">
-                Empowering women through our 'Sakhi Sales' program.
+              <p className="text-xs text-[#1B7F4B] font-bold mt-1">
+                Sign in to your sales &amp; earnings dashboard
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              {["No Investment", "Convenient Working Hours", "Opportunity For Women Only"].map((badge, i) => (
-                <span key={i} className="bg-[#FDB94E] text-[#111111] px-4 py-2 rounded-full text-sm font-bold shadow-sm">
-                  {badge}
-                </span>
-              ))}
-            </div>
-            <p className="text-xs text-[#6B6B6B]">*T&C Apply</p>
-          </div>
+            {/* Login Form Body */}
+            <div className="p-6 sm:p-8">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {errorMsg && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold text-center animate-in fade-in">
+                    {errorMsg}
+                  </div>
+                )}
 
-          <div className="hidden lg:flex items-center gap-4 mt-8 pt-8 border-t border-black/10">
-            <span className="font-semibold text-[#111111]">www.amifresh.in</span>
-            <div className="flex gap-2 ml-auto">
-              {[Facebook, Instagram, Twitter].map((Icon, i) => (
-                <a key={i} href="#" className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center hover:bg-[#0F8A3C] transition-colors">
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT PANEL - LOGIN FORM */}
-        <div className="w-full lg:w-[62%] p-4 sm:p-6 lg:p-12 flex items-center justify-center relative z-10">
-          <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-slide-up">
-
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-12 h-12 bg-[#E7F6EC] rounded-full flex items-center justify-center mx-auto mb-4 text-[#0F8A3C]">
-                <Image src="/Leaf.webp" alt="" width={24} height={24} className="opacity-80" />
-              </div>
-              <h2 className={`${poppins.className} text-2xl font-bold text-[#111111]`}>
-                Welcome Back, Sakhi 👋
-              </h2>
-              <p className="text-[#0F8A3C] font-semibold text-sm mt-1">Sign in to your account</p>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {errorMsg && (
-                <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm mb-4 text-center">
-                  {errorMsg}
+                {/* Identifier Field */}
+                <div>
+                  <label className="block text-xs font-bold text-[#1F2937] mb-1.5">
+                    Login ID / Registered Mobile *
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('identifier')}
+                      type="text"
+                      className="clean-input"
+                      placeholder="e.g. SAKHI1234 or Mobile No."
+                    />
+                  </div>
+                  {errors.identifier && (
+                    <p className="text-red-500 text-[11px] mt-1 font-semibold">{errors.identifier.message}</p>
+                  )}
                 </div>
-              )}
-              {/* Mobile or Email */}
-              <div>
-                <label className="block text-xs font-semibold text-[#6B6B6B] mb-1">Login ID <span className="text-[#D93025]">*</span></label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    {...register('identifier')}
-                    type="text"
-                    placeholder="Enter Login ID"
-                    className="input-field w-full"
-                  />
-                </div>
-                {errors.identifier && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.identifier.message}</p>}
-              </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-semibold text-[#6B6B6B] mb-1">Password <span className="text-[#D93025]">*</span></label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    {...register('password')}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter password"
-                    className="input-field w-full pr-10"
-                  />
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-[#1F2937]">Password *</label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs font-bold text-[#1B7F4B] hover:underline"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('password')}
+                      type={showPassword ? 'text' : 'password'}
+                      className="clean-input !pr-10"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-0.5"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-[11px] mt-1 font-semibold">{errors.password.message}</p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-[#111111]"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-12 bg-gradient-to-r from-[#1B7F4B] to-[#125A33] hover:from-[#166F40] hover:to-[#0C4A28] text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all hover:shadow-[0_8px_25px_rgba(27,127,75,0.3)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                        <span>Logging In...</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        <span>Sign In to Dashboard</span>
+                        <ArrowRight size={15} />
+                      </span>
+                    )}
                   </button>
                 </div>
-                {errors.password && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.password.message}</p>}
-              </div>
 
-              {/* Forgot Password */}
-              <div className="flex justify-end -mt-2">
-                <Link href="/forgot-password" className="text-[#FDB94E] hover:text-[#e09d31] text-sm font-bold transition-colors">
-                  Forgot Password?
-                </Link>
-              </div>
+                {/* Register Link */}
+                <div className="pt-2 text-center border-t border-gray-100">
+                  <p className="text-xs text-[#6B7280]">
+                    New to AmiFresh Sakhi Program?{' '}
+                    <Link href="/join" className="font-extrabold text-[#1B7F4B] hover:underline">
+                      Apply / Join Here
+                    </Link>
+                  </p>
+                </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-[52px] bg-[#0F8A3C] hover:bg-[#0B6B2E] text-white rounded-full font-bold text-lg flex items-center justify-center transition-all hover:-translate-y-1 shadow-[0_4px_12px_rgba(15,138,60,0.2)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-2"
-              >
-                {isSubmitting ? 'Logging in...' : 'Login'}
-              </button>
-            </form>
-
-            <div className="mt-8 text-center">
-              <p className="text-[#6B6B6B] text-sm">
-                New Sakhi?{' '}
-                <Link href="/register" className="text-[#0F8A3C] font-bold hover:underline">
-                  Apply here
-                </Link>
-              </p>
+              </form>
             </div>
-          </div>
-        </div>
 
-        {/* Mobile Footer */}
-        <div className="flex lg:hidden flex-col items-center gap-4 mt-8 pb-8 w-full z-10">
-          <div className="flex gap-3">
-            {[Facebook, Instagram, Twitter].map((Icon, i) => (
-              <a key={i} href="#" className="w-10 h-10 rounded-full bg-[#111111] text-white flex items-center justify-center">
-                <Icon size={18} />
-              </a>
-            ))}
+            {/* Footer Security Note */}
+            <div className="p-3 bg-[#F1FAF3] border-t border-emerald-100 text-center text-[11px] font-bold text-emerald-800 flex items-center justify-center gap-1.5 flex-shrink-0">
+              <ShieldCheck size={14} className="text-[#1B7F4B]" />
+              <span>Authorized 256-bit Encrypted Partner Portal • Verified Safe</span>
+            </div>
+
           </div>
-          <span className="font-semibold text-[#111111]">www.amifresh.in</span>
-        </div>
+        </main>
+
+        {/* Bottom subtle clearance spacer */}
+        <div className="h-6 sm:h-8 flex-shrink-0" />
       </div>
     </div>
   );
