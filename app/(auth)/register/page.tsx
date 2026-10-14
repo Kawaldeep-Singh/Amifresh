@@ -12,7 +12,7 @@ import {
   Camera, Upload, X, FileImage, Calendar, Users, 
   CreditCard, FileText, ChevronDown 
 } from 'lucide-react';
-import { poppins, nunito, caveat } from '@/lib/fonts';
+import { poppins, nunito } from '@/lib/fonts';
 
 const states = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
@@ -307,61 +307,105 @@ export default function RegisterPage() {
           .input-field:focus { outline: none; border-color: #FDB94E; box-shadow: 0 0 0 4px rgba(253, 185, 78, 0.15); }
         `}} />
 
-        {/* Decorative Falling Leaves (Optional background effect) */}
-        <img src="/Leaf.webp" className="absolute top-[10%] left-[5%] w-16 opacity-20 animate-sway pointer-events-none hidden lg:block" alt="" />
-        <img src="/Leaf.webp" className="absolute top-[60%] left-[30%] w-24 opacity-10 animate-sway pointer-events-none hidden lg:block" style={{animationDelay: '2s'}} alt="" />
-        <img src="/Leaf.webp" className="absolute top-[20%] right-[10%] w-20 opacity-20 animate-sway-right pointer-events-none hidden lg:block" style={{animationDelay: '1s'}} alt="" />
-        <img src="/Leaf.webp" className="absolute bottom-[10%] left-[2%] w-32 opacity-30 animate-sway pointer-events-none hidden lg:block" style={{animationDelay: '3s'}} alt="" />
+
 
         {/* LEFT PANEL */}
-        <div className="w-full lg:w-[38%] p-6 lg:p-12 xl:p-16 flex flex-col justify-between relative z-10 min-h-[30vh] lg:h-screen lg:sticky top-0 border-b lg:border-b-0 border-[#FFE3A8] ">
-          <div>
-            <div className="flex items-center gap-4 sm:gap-6 mb-2">
-              <div className="relative w-56 h-20 sm:w-72 sm:h-28">
-                <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" />
-              </div>
-              <div className="w-px h-12 bg-black/10"></div>
-              <div className="relative w-40 h-20 sm:w-56 sm:h-28">
-                <Image src="/Sakhi%20Light.webp" alt="Sakhi" fill className="object-contain object-left" />
-              </div>
-            </div>
-            
-            <p className={`${caveat.className} text-[#0B6B2E]  text-2xl mb-8 tracking-wide`}>Purity at your doorstep</p>
-            
-            <div className={`${poppins.className} mb-8`}>
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-[#111111]  leading-tight mb-2">Work From Home</h1>
-              <h2 className="text-2xl lg:text-3xl font-bold text-[#111111]  mb-4">
-                Earn up to <span className="text-[#0F8A3C] ">₹75,000*</span>/Month
-              </h2>
-              <p className="text-[#6B6B6B]  text-lg font-medium max-w-sm">
-                Empowering women through our 'Sakhi Sales' program.
-              </p>
-            </div>
+        <div className="w-full lg:w-[42%] flex flex-col relative z-10 min-h-[30vh] lg:h-screen lg:sticky top-0 border-b lg:border-b-0 border-[#FFE3A8] overflow-hidden bg-[#FFF5E4]">
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              {["No Investment", "Convenient Working Hours", "Opportunity For Women Only"].map((badge, i) => (
-                <span key={i} className="bg-[#FDB94E] text-[#111111] px-4 py-2 rounded-full text-sm font-bold shadow-sm">
-                  {badge}
-                </span>
-              ))}
+          {/* Top logos row */}
+          <div className="flex items-center justify-between px-6 pt-6 z-10 relative">
+            <div className="relative w-40 h-14 sm:w-52 sm:h-16">
+              <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" />
             </div>
-            <p className="text-xs text-[#6B6B6B] ">*T&C Apply</p>
+            <div className="relative w-28 h-14 sm:w-36 sm:h-16">
+              <Image src="/Sakhi%20Light.webp" alt="Sakhi Sales Program" fill className="object-contain object-right" />
+            </div>
           </div>
 
-          <div className="hidden lg:flex items-center gap-4 mt-8 pt-8 border-t border-black/10 ">
-            <span className="font-semibold text-[#111111] ">www.amifresh.in</span>
-            <div className="flex gap-2 ml-auto">
-              {[Facebook, Instagram, Twitter].map((Icon, i) => (
-                <a key={i} href="#" className="w-8 h-8 rounded-full bg-[#111111]  text-white  flex items-center justify-center hover:bg-[#0F8A3C] :bg-[#22B35A] hover:text-white transition-colors">
-                  <Icon size={16} />
-                </a>
-              ))}
+          {/* Headline */}
+          <div className={`${poppins.className} text-center px-6 pt-4 z-10 relative`}>
+            <p className="text-sm font-bold tracking-[0.2em] uppercase text-[#111111] mb-1">WORK FROM HOME</p>
+            <h1 className="text-3xl lg:text-4xl font-extrabold text-[#111111] leading-tight">
+              EARN UPTO <span className="text-[#111111]">₹ 75000</span>
+              <sup className="text-lg">*</sup> / Month
+            </h1>
+            <p className="text-[#0F8A3C] font-semibold text-sm mt-2 leading-snug">
+              Empowering women through our <span className="font-bold">&apos;Sakhi Sales&apos;</span> program.
+            </p>
+          </div>
+
+          {/* Main visual area: leaves + girl + badges */}
+          <div className="relative flex-1 flex items-end justify-center min-h-[380px] lg:min-h-0">
+
+            {/* Left Palm Leaf */}
+            <img
+              src="/left_leaf.webp"
+              alt=""
+              className="absolute left-[-30px] bottom-0 w-[160px] lg:w-[190px] animate-sway pointer-events-none select-none"
+              style={{ zIndex: 2 }}
+            />
+
+            {/* Right Palm Leaf */}
+            <img
+              src="/right_leaf.webp"
+              alt=""
+              className="absolute right-[-30px] bottom-0 w-[160px] lg:w-[190px] animate-sway-right pointer-events-none select-none"
+              style={{ zIndex: 2 }}
+            />
+
+            {/* Feature Badge – Top Center: No Investment */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10">
+              <div className="bg-[#FDB94E] text-[#111111] px-5 py-2 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 whitespace-nowrap">
+                <Image src="/icon-greemleaf.webp" alt="" width={18} height={18} className="object-contain" />
+                No Investment
+              </div>
+            </div>
+
+            {/* Feature Badge – Middle Left: Convenient Working Hours */}
+            <div className="absolute left-2 top-[45%] -translate-y-1/2 z-10">
+              <div className="bg-[#FDB94E] text-[#111111] px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 max-w-[150px] leading-snug">
+                <Image src="/icon-leaf.webp" alt="" width={18} height={18} className="object-contain flex-shrink-0" />
+                Convenient Working Hours
+              </div>
+            </div>
+
+            {/* Feature Badge – Middle Right: Opportunity For Women Only */}
+            <div className="absolute right-2 top-[45%] -translate-y-1/2 z-10">
+              <div className="bg-[#FDB94E] text-[#111111] px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 max-w-[150px] leading-snug">
+                <Image src="/icon-greemleaf.webp" alt="" width={18} height={18} className="object-contain flex-shrink-0" />
+                Opportunity For Women Only
+              </div>
+            </div>
+
+            {/* Girl Illustration */}
+            <div className="relative z-[3] flex items-end justify-center" style={{ height: '340px', width: '220px' }}>
+              <Image
+                src="/Girl.webp"
+                alt="Sakhi Girl"
+                fill
+                className="object-contain object-bottom"
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="relative z-10 px-6 pb-5">
+            <p className="text-[10px] text-[#6B6B6B] mb-3">*T&amp;C Apply</p>
+            <div className="bg-[#FDB94E] rounded-xl px-5 py-3 flex items-center gap-4">
+              <div className="flex gap-2">
+                {[Facebook, Instagram, Twitter].map((Icon, i) => (
+                  <a key={i} href="#" className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center hover:bg-[#0F8A3C] transition-colors">
+                    <Icon size={15} />
+                  </a>
+                ))}
+              </div>
+              <span className="font-bold text-[#111111] text-sm ml-auto">www.amifresh.in</span>
             </div>
           </div>
         </div>
 
         {/* RIGHT PANEL - FORM */}
-        <div className="w-full lg:w-[62%] p-4 sm:p-6 lg:p-8 xl:p-12 flex items-center justify-center lg:overflow-y-auto h-auto lg:h-screen relative z-10">
+        <div className="w-full lg:w-[58%] p-4 sm:p-6 lg:p-8 xl:p-12 flex items-center justify-center lg:overflow-y-auto h-auto lg:h-screen relative z-10">
           <div className="w-full max-w-4xl bg-white  rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)]  animate-slide-up flex flex-col max-h-full">
             
             {/* Form Header (Sticky) */}
@@ -401,7 +445,7 @@ export default function RegisterPage() {
                       <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">First Name <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input {...register('firstName')} type="text" className="input-field w-full" placeholder="Enter first name" />
+                        <input {...register('firstName')} type="text" className="input-field w-full" placeholder="First name" />
                       </div>
                       {errors.firstName && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.firstName.message}</p>}
                     </div>
@@ -409,7 +453,7 @@ export default function RegisterPage() {
                       <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Last Name <span className="text-[#D93025]">*</span></label>
                       <div className="relative">
                         <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input {...register('lastName')} type="text" className="input-field w-full" placeholder="Enter last name" />
+                        <input {...register('lastName')} type="text" className="input-field w-full" placeholder="Last name" />
                       </div>
                       {errors.lastName && <p className="text-[#D93025] text-xs mt-1 font-medium">{errors.lastName.message}</p>}
                     </div>
@@ -425,7 +469,7 @@ export default function RegisterPage() {
                       <label className="block text-xs font-semibold text-[#6B6B6B]  mb-1">Father / Spouse Name</label>
                       <div className="relative">
                         <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input {...register('fatherSpouseName')} type="text" className="input-field w-full" placeholder="Optional" />
+                        <input {...register('fatherSpouseName')} type="text" className="input-field w-full" placeholder="Father / Spouse Name" />
                       </div>
                     </div>
                     <div className="md:col-span-2">
@@ -567,17 +611,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Mobile Footer */}
-        <div className="flex lg:hidden flex-col items-center gap-4 mt-8 pb-8 w-full z-10">
-          <div className="flex gap-3">
-            {[Facebook, Instagram, Twitter].map((Icon, i) => (
-              <a key={i} href="#" className="w-10 h-10 rounded-full bg-[#111111]  text-white  flex items-center justify-center">
-                <Icon size={18} />
-              </a>
-            ))}
-          </div>
-          <span className="font-semibold text-[#111111] ">www.amifresh.in</span>
-        </div>
+
       </div>
 
       {/* Webcam Modal for Desktop */}
