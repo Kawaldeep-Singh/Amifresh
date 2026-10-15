@@ -1,0 +1,3 @@
+module.exports=[[3605,a=>{var b=a.i(7997),c=a.i(35669);a.s(["default",0,function({children:a}){return(0,b.jsx)(c.DashboardLayout,{children:a})}])},32295,a=>{let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call DashboardLayout() from the server but DashboardLayout is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/components/layout/DashboardLayout.tsx","DashboardLayout");a.s(["DashboardLayout",0,b])},35669,a=>{var b=a.i(32295);a.n(b)}],70809,function(a){a.n(a.i(3605))}];
+
+//# sourceMappingURL=_0udwbaof_0u8x._.js.map

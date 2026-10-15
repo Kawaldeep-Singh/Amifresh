@@ -1,0 +1,47 @@
+{
+  "status": 200,
+  "headers": {
+    "link": "</_next/static/media/07454f8ad8aaac57-s.p.2kjei9psvcorz.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/47fe1b7cd6e6ed85-s.p.3bh2vc0w-r-ll.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/829ba4228c966254-s.p.2mm3nq9i83l-m.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/8495c7a64396f454-s.p.3174gmb7yd72v.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/8e6fa89aa22d24ec-s.p.2o7m9ogm38dql.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/a218039a3287bcfd-s.p.43zbiuwnnoiok.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/e2334d715941921e-s.p.3o_v2fun1jzxk.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\"",
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/admin/layout,_N_T_/(dashboard)/admin/employees/layout,_N_T_/(dashboard)/admin/employees/page,_N_T_/admin/employees"
+  },
+  "postponed": "7:2[]nullnull",
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/admin/employees/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 96,
+                "slots": {
+                  "children": {
+                    "hints": 160,
+                    "slots": null
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/6b420c0574ad1def6ee14b820891cc27ef89df1fdd618f4039138e9f4346c2cf/$/admin/employees",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/(dashboard)/admin/employees/page"
+    },
+    "isFallback": false
+  }
+}

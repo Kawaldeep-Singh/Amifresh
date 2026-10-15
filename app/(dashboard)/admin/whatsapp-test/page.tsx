@@ -5,9 +5,10 @@ import { Send, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function WhatsAppTestPage() {
   const [formData, setFormData] = useState({
-    campaignName: "sample_given_1",
+    campaignName: "order_delivred",
     destination: "+91",
     userName: "Kawaldeep",
+    templateParams: "",
   });
   
   const [loading, setLoading] = useState(false);
@@ -18,11 +19,31 @@ export default function WhatsAppTestPage() {
     setLoading(true);
     setResponse(null);
 
+    const rawDest = formData.destination.trim();
+    const digitsOnly = rawDest.replace(/\D/g, "");
+    if (!rawDest || rawDest === "+91" || digitsOnly.length < 10) {
+      setResponse({
+        success: false,
+        error: "Kripya poora 10-digit mobile number dalein (jaise +919876543210 ya 9876543210). Khali '+91' mat chodiye.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      campaignName: formData.campaignName,
+      destination: formData.destination,
+      userName: formData.userName,
+      templateParams: formData.templateParams
+        ? formData.templateParams.split(",").map((p) => p.trim()).filter(Boolean)
+        : [],
+    };
+
     try {
       const res = await fetch("/api/test-whatsapp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -69,6 +90,9 @@ export default function WhatsAppTestPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               placeholder="+919876543210"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Apna 10-digit number dalein (jaise: <strong>+919876543210</strong> ya bina +91 ke <strong>9876543210</strong>).
+            </p>
           </div>
 
           <div>
@@ -83,6 +107,20 @@ export default function WhatsAppTestPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               placeholder="e.g. Amit"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Template Parameters (Optional, comma-separated)
+            </label>
+            <input
+              type="text"
+              value={formData.templateParams}
+              onChange={(e) => setFormData({ ...formData, templateParams: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="e.g. Kawaldeep, ORD-12345, Today"
+            />
+            <p className="text-xs text-gray-500 mt-1">If your campaign has variables like {'{{1}}, {{2}}'}, enter them comma-separated in order.</p>
           </div>
 
           <button

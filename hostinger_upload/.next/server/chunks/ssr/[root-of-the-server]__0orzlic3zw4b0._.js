@@ -1,0 +1,3 @@
+module.exports=[70406,(a,b,c)=>{b.exports=a.x("next/dist/compiled/@opentelemetry/api",()=>require("next/dist/compiled/@opentelemetry/api"))},81111,(a,b,c)=>{b.exports=a.x("node:stream",()=>require("node:stream"))},63219,a=>{"use strict";var b=a.i(94983);a.S([b,"70be00cbfca201023e21d2e236f95e7d000975f39f,f"],63219)},22017,a=>{"use strict";var b=a.i(56251);async function c(){return await (0,b.p)(),(0,b.F)()}a.s(["f",0,c])}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0orzlic3zw4b0._.js.map

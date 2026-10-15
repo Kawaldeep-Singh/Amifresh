@@ -1,0 +1,3 @@
+module.exports=[45441,a=>{"use strict";var b=a.i(7997),c=a.i(40579);a.s(["default",0,function(){return(0,b.jsxs)("div",{className:"space-y-6",children:[(0,b.jsx)("div",{className:"flex items-center justify-between",children:(0,b.jsx)(c.l,{className:"h-8 w-52"})}),(0,b.jsx)("div",{className:"bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex",children:(0,b.jsx)(c.l,{className:"h-10 w-full sm:w-80 rounded-lg"})}),(0,b.jsx)(c.R,{count:8})]})}])},54668,function(a){a.n(a.i(45441))}];
+
+//# sourceMappingURL=app_%28dashboard%29_sakhi_products_loading_tsx_1qrtdc818eeoy._.js.map

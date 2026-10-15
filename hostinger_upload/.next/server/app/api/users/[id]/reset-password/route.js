@@ -1,0 +1,11 @@
+var R=require("../../../../../chunks/[turbopack]_runtime.js")("server/app/api/users/[id]/reset-password/route.js")
+R.c("server/chunks/[root-of-the-server]__1sxj17tkkybs2._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/models_User_ts_081fom7r0ikez._.js")
+R.c("server/chunks/[root-of-the-server]__04aemeds-w6aj._.js")
+R.c("server/chunks/_1-azwps462be1._.js")
+R.c("server/chunks/_07od-s5ohp9y1._.js")
+R.c("server/chunks/_0u0mxzdpgcm0z._.js")
+R.c("server/chunks/1oeh_server_app_api_users_[id]_reset-password_route_actions_1p6v7erxose2x.js")
+R.m(8956)
+module.exports=R.m(8956).exports
