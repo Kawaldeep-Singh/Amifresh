@@ -520,29 +520,39 @@ export const User = {
     const graphStage = pipeline.find((p) => p.$graphLookup);
 
     if (matchStage && graphStage) {
-      const targetId = matchStage.$match._id
-        ? typeof matchStage.$match._id === 'object'
-          ? matchStage.$match._id.toString()
-          : matchStage.$match._id
-        : matchStage.$match.id;
+      let targetIds: string[] = [];
+      const idVal = matchStage.$match._id || matchStage.$match.id;
 
-      const rootUser = await queryOne<any>('SELECT * FROM users WHERE id = ?', [targetId]);
-      if (!rootUser) return [];
+      if (idVal) {
+        if (typeof idVal === 'object' && idVal.$in && Array.isArray(idVal.$in)) {
+          targetIds = idVal.$in.map((x: any) => (typeof x === 'object' ? x.toString() : String(x)));
+        } else if (typeof idVal === 'object') {
+          targetIds = [idVal.toString()];
+        } else {
+          targetIds = [String(idVal)];
+        }
+      }
 
-      const networkRows = await query<any>(
-        `WITH RECURSIVE downline AS (
-          SELECT id, name, email, phone, role, status, referralCode, referredBy, totalSales, totalCommission, createdAt, 1 as level
-          FROM users WHERE referredBy = ?
-          UNION ALL
-          SELECT u.id, u.name, u.email, u.phone, u.role, u.status, u.referralCode, u.referredBy, u.totalSales, u.totalCommission, u.createdAt, d.level + 1
-          FROM users u INNER JOIN downline d ON u.referredBy = d.id
-        )
-        SELECT * FROM downline`,
-        [targetId]
-      );
+      if (targetIds.length === 0) return [];
 
-      return [
-        {
+      const results: any[] = [];
+      for (const targetId of targetIds) {
+        const rootUser = await queryOne<any>('SELECT * FROM users WHERE id = ?', [targetId]);
+        if (!rootUser) continue;
+
+        const networkRows = await query<any>(
+          `WITH RECURSIVE downline AS (
+            SELECT id, name, email, phone, role, status, referralCode, referredBy, totalSales, totalCommission, createdAt, 1 as level
+            FROM users WHERE referredBy = ?
+            UNION ALL
+            SELECT u.id, u.name, u.email, u.phone, u.role, u.status, u.referralCode, u.referredBy, u.totalSales, u.totalCommission, u.createdAt, d.level + 1
+            FROM users u INNER JOIN downline d ON u.referredBy = d.id
+          )
+          SELECT * FROM downline`,
+          [targetId]
+        );
+
+        results.push({
           _id: rootUser.id,
           name: rootUser.name,
           email: rootUser.email,
@@ -558,8 +568,10 @@ export const User = {
             totalSales: Number(r.totalSales || 0),
             totalCommission: Number(r.totalCommission || 0),
           })),
-        },
-      ];
+        });
+      }
+
+      return results;
     }
 
     return [];

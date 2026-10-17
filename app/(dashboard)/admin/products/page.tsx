@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,10 @@ import { UserRole } from '@/types/user';
 import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import ProductsClient from './ProductsClient';
+
+export const metadata: Metadata = {
+  title: 'Product Catalog Management | Amifresh Admin',
+};
 
 export default async function AdminProductsPage() {
   const session = await getServerSession(authOptions);

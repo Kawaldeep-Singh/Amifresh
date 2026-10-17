@@ -1,5 +1,10 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Settings, Save } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'System Settings | Amifresh Admin',
+};
 
 export default function AdminSettingsPage() {
   return (

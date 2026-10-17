@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,10 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { Search, Package, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Product Catalog | Amifresh Sakhi',
+};
 
 export default async function MemberProductsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const resolvedParams = await searchParams;

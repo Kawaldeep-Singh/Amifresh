@@ -1,16 +1,31 @@
 import { NextResponse } from 'next/server';
-import { sendWhatsAppMessage } from '@/services/whatsapp.service';
+import { sendWhatsAppMessage, sendSakhiApprovalSequence } from '@/services/whatsapp.service';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Yahan par hum test values pass kar rahe hain
-    // Aap Postman ya kisi aur tool se body me values bhej sakte hain
+
+    if (body.isSequence) {
+      const result = await sendSakhiApprovalSequence({
+        destination: body.destination,
+        userName: body.userName || 'Amit Sharma',
+        loginId: body.loginId || 'SAKHI978925',
+        password: body.password || 'Password@123',
+        referralCode: body.referralCode || 'AMIT8760',
+        delayMs: Number(body.delayMs) || 12000,
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: result,
+        message: 'Sequence initiated! Step 1 (KYC Approved) sent immediately. Step 2 (ID & Password) will arrive in 12-15 seconds.',
+      });
+    }
+
     const result = await sendWhatsAppMessage({
-      campaignName: body.campaignName, // e.g. "welcome_message"
-      destination: body.destination,   // e.g. "+919876543210"
-      userName: body.userName,         // e.g. "Kawaldeep"
+      campaignName: body.campaignName,
+      destination: body.destination,
+      userName: body.userName,
       templateParams: body.templateParams || [],
     });
 

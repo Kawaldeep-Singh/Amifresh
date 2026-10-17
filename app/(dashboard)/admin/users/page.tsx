@@ -156,7 +156,7 @@ export default async function AdminUsersPage({
                 <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Role & Status</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Referral Info</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Joined Date</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-primary-dark uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-primary-dark uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-border">
@@ -192,7 +192,7 @@ export default async function AdminUsersPage({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                     <UserTableActions 
                       userId={user._id.toString()} 
                       userReferralCode={user.referralCode}

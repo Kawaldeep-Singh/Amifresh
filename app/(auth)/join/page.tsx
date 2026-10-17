@@ -61,7 +61,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [variant, setVariant] = useState<'v1' | 'v2'>('v1');
+  const [registeredId, setRegisteredId] = useState<string>('');
 
 
   // Webcam Modal State
@@ -77,6 +77,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    document.title = 'Amifresh Sakhi';
   }, []);
 
   const {
@@ -91,6 +92,20 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     mode: 'onTouched',
   });
+
+  // Auto-fill referral code from URL query parameter (e.g. /join?ref=KAWA3826 or /join?referralCode=KAWA3826)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeFromUrl = urlParams.get('ref') || urlParams.get('referralCode') || urlParams.get('code');
+      if (codeFromUrl) {
+        setValue('referralCode', codeFromUrl.trim().toUpperCase(), {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    }
+  }, [setValue]);
 
   const photoVal = watch('photo');
   const panVal = watch('pan');
@@ -144,22 +159,66 @@ export default function RegisterPage() {
     return () => clearTimeout(timer);
   }, [referralCodeVal]);
 
-  const fileToBase64 = (file: File | undefined | null): Promise<string | undefined> => {
+  const compressImageToBase64 = (file: File | undefined | null): Promise<string | undefined> => {
     if (!file) return Promise.resolve(undefined);
-    return new Promise((resolve, reject) => {
+
+    // If not an image (e.g. PDF), read directly
+    if (!file.type.startsWith('image/')) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // Client-side Canvas Compression (Max 1280px dimension, 0.78 quality)
+    // Drops a 5MB phone photo down to ~150KB-200KB while preserving sharp text readability!
+    return new Promise((resolve) => {
       const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.78);
+            resolve(compressed);
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve(undefined);
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
     });
   };
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      const photoBase64 = await fileToBase64(data.photo as File | undefined);
-      const panBase64 = await fileToBase64(data.pan as File | undefined);
-      const aadhaarFrontBase64 = await fileToBase64(data.aadhaarFront as File | undefined);
-      const aadhaarBackBase64 = await fileToBase64(data.aadhaarBack as File | undefined);
+      const photoBase64 = await compressImageToBase64(data.photo as File | undefined);
+      const panBase64 = await compressImageToBase64(data.pan as File | undefined);
+      const aadhaarFrontBase64 = await compressImageToBase64(data.aadhaarFront as File | undefined);
+      const aadhaarBackBase64 = await compressImageToBase64(data.aadhaarBack as File | undefined);
 
       const payload = {
         name: `${data.firstName} ${data.lastName}`.trim(),
@@ -191,6 +250,11 @@ export default function RegisterPage() {
         const err = await res.json();
         alert(err.error || 'Registration failed');
         return;
+      }
+
+      const resData = await res.json();
+      if (resData.registrationId) {
+        setRegisteredId(resData.registrationId);
       }
 
       setIsSuccess(true);
@@ -716,136 +780,59 @@ export default function RegisterPage() {
           <img src="/right_leaf.webp" alt="AmiFresh Right Leaf" className="w-[170px] xl:w-[215px] drop-shadow-md" />
         </div>
 
-        {/* ════════════════════════════════════════════════════════════════
-            VARIANT 1: CLEAN FORM ALIGNED AT TOP WITH LOGOS
-        ════════════════════════════════════════════════════════════════ */}
-        {variant === 'v1' && (
-          <div className="flex-1 flex flex-col relative w-full h-full lg:h-screen lg:overflow-hidden">
-            {/* Mobile Header (< lg screens) */}
-            <div className="lg:hidden flex items-center justify-between px-5 py-3 bg-white/90 backdrop-blur-md border-b border-[#EFE5D3] sticky top-0 z-30 flex-shrink-0">
-              <div className="relative w-36 h-10">
-                <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" priority />
-              </div>
-              <div className="relative w-32 h-10">
-                <Image src="/Sakhi Light.webp" alt="Sakhi" fill className="object-contain object-right" priority />
-              </div>
+        {/* Registration Form Layout */}
+        <div className="flex-1 flex flex-col relative w-full h-full lg:h-screen lg:overflow-hidden">
+          {/* Mobile Header (< lg screens) */}
+          <div className="lg:hidden flex items-center justify-between px-5 py-3 bg-white/90 backdrop-blur-md border-b border-[#EFE5D3] sticky top-0 z-30 flex-shrink-0">
+            <div className="relative w-36 h-10">
+              <Image src="/dark-logo.webp" alt="AmiFresh" fill className="object-contain object-left" priority />
             </div>
-
-            {/* Desktop: 3-Column Layout with items-start aligning Form and Logos at the top */}
-            <main className="flex-1 w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-14 sm:pb-16 flex flex-col justify-start z-10 relative lg:h-screen lg:overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-8 items-start lg:h-[calc(100vh-2.5rem)]">
-
-                {/* 👈 Top-Left: AmiFresh Logo (Desktop) */}
-                <div className="hidden lg:flex lg:col-span-2 xl:col-span-2 justify-start pt-2">
-                  <div className="relative w-44 xl:w-56 h-14 xl:h-18 hover:scale-105 transition-transform duration-300">
-                    <Image
-                      src="/dark-logo.webp"
-                      alt="AmiFresh"
-                      fill
-                      className="object-contain object-left"
-                      priority
-                    />
-                  </div>
-                </div>
-
-                {/* 🎯 Center: Application Form (Increased width & visual weight) */}
-                <div className="col-span-1 lg:col-span-8 xl:col-span-8 w-full flex justify-center items-start lg:max-h-[calc(100vh-4.5rem)]">
-                  {renderFormCard(
-                    "max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px]",
-                    "border-[1.5px] border-[#E0D3BC] shadow-[0_24px_70px_rgba(0,0,0,0.09)]"
-                  )}
-                </div>
-
-                {/* 👉 Top-Right: Sakhi Logo (Desktop) */}
-                <div className="hidden lg:flex lg:col-span-2 xl:col-span-2 justify-end pt-2">
-                  <div className="relative w-40 xl:w-52 h-14 xl:h-18 hover:scale-105 transition-transform duration-300">
-                    <Image
-                      src="/Sakhi Light.webp"
-                      alt="Sakhi Program"
-                      fill
-                      className="object-contain object-right"
-                      priority
-                    />
-                  </div>
-                </div>
-
-              </div>
-            </main>
+            <div className="relative w-32 h-10">
+              <Image src="/Sakhi Light.webp" alt="Sakhi" fill className="object-contain object-right" priority />
+            </div>
           </div>
-        )}
 
-        {/* ════════════════════════════════════════════════════════════════
-            VARIANT 2: 2-COLUMN SPLIT WITH ARTBOARD 5 BANNER
-        ════════════════════════════════════════════════════════════════ */}
-        {variant === 'v2' && (
-          <div className="flex-1 flex flex-col justify-between">
-            <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3 lg:py-4 flex flex-col justify-center z-10 relative lg:h-screen lg:overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-10 items-center lg:h-full">
+          {/* Desktop: 3-Column Layout with items-start aligning Form and Logos at the top */}
+          <main className="flex-1 w-full max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-6 sm:pb-8 flex flex-col justify-start z-10 relative lg:h-screen lg:overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-8 items-start lg:h-[calc(100vh-2.5rem)]">
 
-                {/* 👈 LEFT COLUMN: Artboard 5 Brand Banner (Matching Theam idea.webp) */}
-                <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-center justify-center space-y-3">
-                  <div className="relative w-full max-w-[520px] xl:max-w-[570px] aspect-square rounded-3xl overflow-hidden shadow-[0_16px_45px_rgba(0,0,0,0.08)] border border-[#EFE5D3] bg-white">
-                    <Image
-                      src="/Theam-idea.jpg"
-                      alt="AmiFresh Sakhi Program - Work from Home"
-                      fill
-                      className="object-contain"
-                      priority
-                      quality={95}
-                    />
-                  </div>
-
-                  {/* Additional Benefit Tags */}
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
-                    <span className="px-3 py-1 rounded-full bg-white/95 border border-[#EFE5D3] text-xs font-bold text-[#1F2937] shadow-2xs">
-                      ✨ No Joining Fee
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-white/95 border border-[#EFE5D3] text-xs font-bold text-[#1F2937] shadow-2xs">
-                      🛡️ No Security Deposit
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-white/95 border border-[#EFE5D3] text-xs font-bold text-[#1F2937] shadow-2xs">
-                      🌸 Only for Women
-                    </span>
-                  </div>
+              {/* 👈 Top-Left: AmiFresh Logo (Desktop) */}
+              <div className="hidden lg:flex lg:col-span-2 xl:col-span-2 justify-start pt-2">
+                <div className="relative w-44 xl:w-56 h-14 xl:h-18 hover:scale-105 transition-transform duration-300">
+                  <Image
+                    src="/dark-logo.webp"
+                    alt="AmiFresh"
+                    fill
+                    className="object-contain object-left"
+                    priority
+                  />
                 </div>
-
-                {/* 🎯 RIGHT COLUMN: Sakhi Application Form */}
-                <div className="lg:col-span-6 xl:col-span-6 w-full flex flex-col items-center justify-center lg:max-h-[calc(100vh-2.5rem)]">
-                  {renderFormCard("max-w-[520px] xl:max-w-[570px]")}
-                </div>
-
               </div>
-            </main>
-          </div>
-        )}
 
-        {/* ════════════════════════════════════════════════════════════════
-            FLOATING VARIANT SWITCHER PILL (Bottom Center)
-        ════════════════════════════════════════════════════════════════ */}
-        <aside aria-label="Design variant switcher" className="fixed bottom-3.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 p-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.18)] border border-[#E8DEC8]">
-          <button
-            type="button"
-            onClick={() => setVariant('v1')}
-            className={`px-4 py-1.5 rounded-full text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${variant === 'v1'
-                ? 'bg-[#1B7F4B] text-white shadow-md scale-105'
-                : 'text-[#1F2937] hover:bg-gray-100'
-              }`}
-          >
-            <span>✨ Variant 1</span>
-            <span className="text-[10px] font-normal opacity-85 hidden sm:inline">(Side Badges)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setVariant('v2')}
-            className={`px-4 py-1.5 rounded-full text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${variant === 'v2'
-                ? 'bg-[#1B7F4B] text-white shadow-md scale-105'
-                : 'text-[#1F2937] hover:bg-gray-100'
-              }`}
-          >
-            <span>🎨 Variant 2</span>
-            <span className="text-[10px] font-normal opacity-85 hidden sm:inline">(Artboard Banner)</span>
-          </button>
-        </aside>
+              {/* 🎯 Center: Application Form (Increased width & visual weight) */}
+              <div className="col-span-1 lg:col-span-8 xl:col-span-8 w-full flex justify-center items-start lg:max-h-[calc(100vh-4.5rem)]">
+                {renderFormCard(
+                  "max-w-[740px] xl:max-w-[820px] 2xl:max-w-[880px]",
+                  "border-[1.5px] border-[#E0D3BC] shadow-[0_24px_70px_rgba(0,0,0,0.09)]"
+                )}
+              </div>
+
+              {/* 👉 Top-Right: Sakhi Logo (Desktop) */}
+              <div className="hidden lg:flex lg:col-span-2 xl:col-span-2 justify-end pt-2">
+                <div className="relative w-40 xl:w-52 h-14 xl:h-18 hover:scale-105 transition-transform duration-300">
+                  <Image
+                    src="/Sakhi Light.webp"
+                    alt="Sakhi Program"
+                    fill
+                    className="object-contain object-right"
+                    priority
+                  />
+                </div>
+              </div>
+
+            </div>
+          </main>
+        </div>
 
       </div>
 
@@ -908,9 +895,15 @@ export default function RegisterPage() {
             <h3 className={`${poppins.className} font-black text-2xl mb-2 text-gray-900`}>
               Application Submitted!
             </h3>
+            {registeredId && (
+              <div className="my-3 py-2 px-4 rounded-xl bg-emerald-50 border border-emerald-200 inline-block">
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">Registration / Sakhi ID</span>
+                <span className="text-lg font-black text-emerald-800 font-mono tracking-wider">{registeredId}</span>
+              </div>
+            )}
             <p className="text-xs text-gray-600 mb-6 leading-relaxed">
               Your registration has been received and your KYC documents are currently{' '}
-              <span className="font-bold text-amber-600">Pending Verification</span>. We will update you via SMS / WhatsApp once approved.
+              <span className="font-bold text-amber-600">Pending Verification</span>. We have also sent your Registration ID to your WhatsApp number.
             </p>
             <button
               onClick={() => setIsSuccess(false)}

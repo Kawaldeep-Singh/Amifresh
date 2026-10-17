@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existingUser) {
-      return NextResponse.json({ error: 'An account with this email or phone already exists.' }, { status: 400 });
+      return NextResponse.json({ error: 'An account with this email or mobile number already exists.' }, { status: 400 });
     }
 
     // Verify referral code if provided
@@ -40,15 +40,28 @@ export async function POST(req: Request) {
       referrerId = referrer._id;
     }
 
+    // Generate unique official Sakhi ID (e.g. SAKHI1001 / SAKHI + 6 digits)
+    let sakhiId = '';
+    let isUniqueSakhiId = false;
+    while (!isUniqueSakhiId) {
+      const randomNum = Math.floor(100000 + Math.random() * 900000);
+      sakhiId = `SAKHI${randomNum}`;
+      const existing = await User.findOne({ loginId: sakhiId });
+      if (!existing) {
+        isUniqueSakhiId = true;
+      }
+    }
+
     // Generate a final referral code immediately
     const { generateUniqueReferralCode } = await import('@/services/referral.service');
     const newReferralCode = await generateUniqueReferralCode(name);
 
-    // Create User directly with PENDING status
+    // Create User directly with PENDING status and assigned Sakhi loginId
     await User.create({
       name,
       email,
       phone,
+      loginId: sakhiId,
       referralCode: newReferralCode,
       referredBy: referrerId,
       status: 'PENDING',
@@ -66,9 +79,23 @@ export async function POST(req: Request) {
       aadhaarCardBack,
     });
 
+    // Send WhatsApp notification using sakhi_reg campaign
+    try {
+      const { sendSakhiRegistrationMessage } = await import('@/services/whatsapp.service');
+      await sendSakhiRegistrationMessage({
+        destination: phone,
+        userName: name,
+        registrationId: sakhiId,
+      });
+    } catch (waError) {
+      console.error('WhatsApp registration notification warning:', waError);
+    }
+
     return NextResponse.json({
       message: 'Registration submitted successfully. Your registration is currently under review.',
       success: true,
+      registrationId: sakhiId,
+      referralCode: newReferralCode,
     }, { status: 201 });
     
   } catch (error: any) {

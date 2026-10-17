@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -6,6 +7,10 @@ import { UserRole } from '@/types/user';
 import { Users, UserPlus, Briefcase, HeartHandshake } from 'lucide-react';
 import { getAdminDashboardStats } from '@/services/dashboard.service';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard | Amifresh Admin',
+};
 
 export default async function AdminDashboard() {
   await connection();

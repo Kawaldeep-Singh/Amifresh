@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,6 +7,10 @@ import { UserRole } from '@/types/user';
 import connectDB from '@/lib/mongodb';
 import AuditLog from '@/models/AuditLog';
 import { Activity, Search } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Audit Logs | Amifresh Admin',
+};
 
 export default async function AdminAuditLogsPage({ searchParams }: { searchParams: Promise<{ page?: string, action?: string }> }) {
   const resolvedParams = await searchParams;

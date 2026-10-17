@@ -1,6 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { Network } from 'lucide-react';
 import NetworkTreeViewer from '@/components/network/NetworkTreeViewer';
+
+export const metadata: Metadata = {
+  title: 'Team Network Tree | Amifresh Team',
+};
 
 export default function TeamNetworkPage() {
   return (

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -6,7 +7,10 @@ import connectDB from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { Package, ShoppingCart, ArrowLeft, Check, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import mongoose from 'mongoose';
+
+export const metadata: Metadata = {
+  title: 'Product Details | Amifresh Sakhi',
+};
 
 export default async function MemberProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -16,21 +20,21 @@ export default async function MemberProductDetailsPage({ params }: { params: Pro
     redirect('/login');
   }
 
-  if (!mongoose.isValidObjectId(resolvedParams.id)) {
-    redirect('/member/products');
+  if (!resolvedParams?.id) {
+    redirect('/sakhi/products');
   }
 
   await connectDB();
   const product = await Product.findOne({ _id: resolvedParams.id, status: 'ACTIVE' }).lean();
 
   if (!product) {
-    redirect('/member/products');
+    redirect('/sakhi/products');
   }
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <Link href="/member/products" className="inline-flex items-center text-sm text-gray-500 hover:text-primary transition-colors">
+        <Link href="/sakhi/products" className="inline-flex items-center text-sm text-gray-500 hover:text-primary transition-colors">
           <ArrowLeft size={16} className="mr-1" />
           Back to Catalog
         </Link>

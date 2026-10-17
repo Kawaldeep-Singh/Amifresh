@@ -50,6 +50,7 @@ export default function SakhiNetworkPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    document.title = 'My Network Tree | Amifresh Sakhi';
     if (session?.user?.id) {
       fetch(`/api/referrals/${session.user.id}/tree`)
         .then(res => res.json())

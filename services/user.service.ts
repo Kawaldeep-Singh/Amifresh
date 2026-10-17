@@ -258,3 +258,51 @@ export async function getSakhiStats() {
     pending: Number(row?.pending || 0),
   };
 }
+
+export async function deleteUserPermanently(targetUserId: string, adminUserId: string) {
+  if (!targetUserId) throw new Error('Invalid user ID');
+  if (!adminUserId) throw new Error('Invalid admin ID');
+
+  if (targetUserId === adminUserId) {
+    throw new Error('You cannot delete your own account');
+  }
+
+  const user = await queryOne<any>('SELECT * FROM users WHERE id = ?', [targetUserId]);
+  if (!user) throw new Error('User not found');
+
+  if (user.role === UserRole.ROOT_ADMIN) {
+    throw new Error('Master Admin account cannot be deleted');
+  }
+
+  await transaction(async (conn) => {
+    // 1. Unlink downline referrals so network tree continues gracefully
+    await conn.execute('UPDATE users SET referredBy = NULL WHERE referredBy = ?', [targetUserId]);
+
+    // 2. Remove referral histories involving this user
+    await conn.execute('DELETE FROM referral_histories WHERE referredUser = ? OR referrer = ?', [targetUserId, targetUserId]);
+
+    // 3. Remove commissions for this user
+    await conn.execute('DELETE FROM commissions WHERE user = ?', [targetUserId]);
+
+    // 4. Unlink orders referring to this user
+    await conn.execute('UPDATE orders SET referredBy = NULL WHERE referredBy = ?', [targetUserId]);
+
+    // 5. Delete orders placed by this user
+    await conn.execute('DELETE FROM orders WHERE customer = ?', [targetUserId]);
+
+    // 6. Delete user record permanently
+    await conn.execute('DELETE FROM users WHERE id = ?', [targetUserId]);
+
+    // 7. Record in audit logs
+    const auditId = crypto.randomUUID();
+    const desc = `Permanently deleted user: ${user.name} (Role: ${user.role}, Email: ${user.email}, Referral Code: ${user.referralCode}, Login ID: ${user.loginId || 'N/A'})`;
+    await conn.execute(
+      `INSERT INTO audit_logs (id, performedBy, action, entityType, entityId, description, createdAt, updatedAt)
+       VALUES (?, ?, 'USER_DELETED', 'User', ?, ?, NOW(), NOW())`,
+      [auditId, adminUserId, targetUserId, desc]
+    );
+  });
+
+  return true;
+}
+

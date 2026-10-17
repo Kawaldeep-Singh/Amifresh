@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function MemberIndex() {
-  redirect('/member/dashboard');
+  redirect('/sakhi/dashboard');
 }

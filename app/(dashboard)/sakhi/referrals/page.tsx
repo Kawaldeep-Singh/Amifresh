@@ -9,7 +9,7 @@ import { Users, Link as LinkIcon, Network } from 'lucide-react';
 import ReferralLink from '@/components/dashboard/ReferralLink';
 
 export const metadata: Metadata = {
-  title: 'My Referrals | Amifresh',
+  title: 'My Referrals | Amifresh Sakhi',
 };
 
 export default async function SakhiReferralsPage() {

@@ -1,11 +1,17 @@
 import mysql, { Pool, PoolConnection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 
-const DB_HOST = process.env.DB_HOST || 'localhost';
+const rawHost = process.env.DB_HOST || '127.0.0.1';
+const DB_HOST = rawHost === 'localhost' ? '127.0.0.1' : rawHost;
 const DB_PORT = Number(process.env.DB_PORT) || 3306;
-const DB_USER = process.env.DB_USER || 'u789152685_amifresh_sakhi';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'Amifresh@1234';
+const DB_USER = process.env.DB_USER !== undefined ? process.env.DB_USER : 'u789152685_amifresh_sakhi';
+const DB_PASSWORD = process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : 'Amifresh@1234';
 const DB_NAME = process.env.DB_NAME || 'u789152685_sakhi_amifresh';
+
+const ROOT_ADMIN_EMAIL = process.env.ROOT_ADMIN_EMAIL || 'admin@amifresh.com';
+const ROOT_ADMIN_LOGIN_ID = process.env.ROOT_ADMIN_LOGIN_ID || 'ADMIN001';
+const ROOT_ADMIN_PASSWORD = process.env.ROOT_ADMIN_PASSWORD || 'admin123';
+const ROOT_ADMIN_PHONE = process.env.ROOT_ADMIN_PHONE || '9999999999';
 
 let pool: Pool;
 
@@ -28,7 +34,8 @@ export function getPool(): Pool {
       enableKeepAlive: true,
       keepAliveInitialDelay: 10000,
       charset: 'utf8mb4',
-    });
+      maxAllowedPacket: 67108864, // 64 MB
+    } as any);
   }
   return global._mysqlPool;
 }
@@ -78,6 +85,10 @@ export async function ensureInitialized() {
 
   try {
     const p = getPool();
+
+    try {
+      await p.query('SET GLOBAL max_allowed_packet = 67108864');
+    } catch {}
 
     // 1. users table
     await p.query(`
@@ -248,20 +259,31 @@ export async function ensureInitialized() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // Ensure Default Root Admin exists
-    const [adminRows]: any = await p.query('SELECT id FROM users WHERE email = ?', ['admin@amifresh.com']);
+    // Ensure Default Root Admin exists or sync with ENV
+    const [adminRows]: any = await p.query(
+      'SELECT id, password FROM users WHERE role = ? OR email = ? OR loginId = ? LIMIT 1',
+      ['ROOT_ADMIN', ROOT_ADMIN_EMAIL, ROOT_ADMIN_LOGIN_ID]
+    );
+
     if (!adminRows || adminRows.length === 0) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const hashedPassword = await bcrypt.hash(ROOT_ADMIN_PASSWORD, 10);
       await p.query(`
         INSERT INTO users (
           id, name, email, phone, password, loginId,
           mustChangePassword, role, referralCode, status,
           commissionRate, totalSales, totalCommission
         ) VALUES (
-          'admin-root-0001', 'Master Admin', 'admin@amifresh.com', '9999999999',
-          ?, 'ADMIN001', 0, 'ROOT_ADMIN', 'AMIFRESH', 'ACTIVE', 35.00, 0.00, 0.00
+          'admin-root-0001', 'Master Admin', ?, ?,
+          ?, ?, 0, 'ROOT_ADMIN', 'AMIFRESH', 'ACTIVE', 35.00, 0.00, 0.00
         )
-      `, [hashedPassword]);
+      `, [ROOT_ADMIN_EMAIL, ROOT_ADMIN_PHONE, hashedPassword, ROOT_ADMIN_LOGIN_ID]);
+    } else if (process.env.ROOT_ADMIN_SYNC === 'true') {
+      // Allows forcing admin password/loginId update directly via ENV on server restart
+      const hashedPassword = await bcrypt.hash(ROOT_ADMIN_PASSWORD, 10);
+      await p.query(
+        'UPDATE users SET loginId = ?, email = ?, password = ? WHERE id = ?',
+        [ROOT_ADMIN_LOGIN_ID, ROOT_ADMIN_EMAIL, hashedPassword, adminRows[0].id]
+      );
     }
 
     global._dbInitialized = true;

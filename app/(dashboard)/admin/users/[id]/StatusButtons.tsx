@@ -1,12 +1,38 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserStatus } from '@/types/user';
-import { changeUserStatus } from '../actions';
+import { changeUserStatus, deleteUser } from '../actions';
 import { Button } from '@/components/ui/Button';
+import { Trash2 } from 'lucide-react';
 
 export default function StatusButtons({ userId, currentStatus, isSelf }: { userId: string, currentStatus: UserStatus, isSelf: boolean }) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    if (isSelf) {
+      alert("You cannot delete your own account.");
+      return;
+    }
+
+    const confirmed = confirm(
+      "⚠️ DANGER / PERMANENT ACTION:\n\nAre you sure you want to PERMANENTLY DELETE this user?\n\nThis will completely remove their account, credentials, and data from the system. This action CANNOT be undone!"
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    const res = await deleteUser(userId);
+    setLoading(false);
+
+    if (res?.error) {
+      alert(res.error);
+    } else {
+      alert("User has been permanently deleted.");
+      router.push('/admin/users');
+    }
+  };
 
   const handleStatusChange = async (newStatus: UserStatus) => {
     if (isSelf && newStatus !== UserStatus.ACTIVE) {
@@ -67,6 +93,17 @@ export default function StatusButtons({ userId, currentStatus, isSelf }: { userI
           disabled={loading || isSelf}
         >
           Block
+        </Button>
+      )}
+      {!isSelf && (
+        <Button 
+          variant="danger" 
+          onClick={handleDelete}
+          isLoading={loading}
+          disabled={loading || isSelf}
+          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1.5"
+        >
+          <Trash2 size={15} /> Delete User
         </Button>
       )}
     </div>

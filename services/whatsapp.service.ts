@@ -75,3 +75,144 @@ export async function sendOrderDeliveredMessage(data: OrderDeliveredPayload) {
     attributes: data.attributes,
   });
 }
+
+export interface SakhiRegistrationPayload {
+  destination: string;
+  userName: string;
+  registrationId: string;
+}
+
+export async function sendSakhiRegistrationMessage(data: SakhiRegistrationPayload) {
+  const campaignName = process.env.WHATSAPP_CAMPAIGN_SAKHI_REG || 'sakhi_reg';
+  return sendWhatsAppMessage({
+    campaignName,
+    destination: data.destination,
+    userName: data.userName,
+    templateParams: [data.userName, data.registrationId],
+  });
+}
+
+export interface SakhiAccountCreatedPayload {
+  destination: string;
+  userName: string;
+  loginId: string;
+  password: string;
+  referralCode: string;
+}
+
+export async function sendSakhiAccountCreatedMessage(data: SakhiAccountCreatedPayload) {
+  const campaignName =
+    process.env.WHATSAPP_CAMPAIGN_SAKHI_ACCOUNT_CREATED ||
+    'sample_given1';
+
+  const domain =
+    process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes('localhost')
+      ? process.env.NEXTAUTH_URL
+      : 'https://sakhi.amifresh.in';
+
+  const referralLink = `${domain.replace(/\/$/, '')}/join?ref=${data.referralCode}`;
+
+  return sendWhatsAppMessage({
+    campaignName,
+    destination: data.destination,
+    userName: data.userName,
+    templateParams: [
+      data.userName,
+      `🔐 User Name - ${data.loginId}`,
+      `🔑 Password - ${data.password}`,
+      referralLink,
+    ],
+  });
+}
+
+export interface SakhiApprovalSequencePayload {
+  destination: string;
+  userName: string;
+  loginId: string;
+  password: string;
+  referralCode: string;
+  delayMs?: number;
+}
+
+export async function sendSakhiApprovalSequence(data: SakhiApprovalSequencePayload) {
+  const kycCampaign = process.env.WHATSAPP_CAMPAIGN_SAKHI_APPROVED || 'sakhi_approved1';
+
+  // Step 1: Immediately send KYC Approved message (sakhi_approved1)
+  let kycResult = null;
+  try {
+    kycResult = await sendWhatsAppMessage({
+      campaignName: kycCampaign,
+      destination: data.destination,
+      userName: data.userName,
+      templateParams: [data.userName],
+    });
+    console.log(`[WhatsApp Sequence 1/2] KYC approval message sent to ${data.destination}:`, kycResult);
+  } catch (err) {
+    console.error(`[WhatsApp Sequence 1/2] Error sending KYC approval to ${data.destination}:`, err);
+  }
+
+  // Step 2: Send Account Credentials & Referral Link (sample_given1) after delay (default 12-15 seconds)
+  const delayMs = data.delayMs ?? 12000;
+  setTimeout(async () => {
+    try {
+      const credsResult = await sendSakhiAccountCreatedMessage({
+        destination: data.destination,
+        userName: data.userName,
+        loginId: data.loginId,
+        password: data.password,
+        referralCode: data.referralCode,
+      });
+      console.log(`[WhatsApp Sequence 2/2] Account details message sent to ${data.destination} after ${delayMs / 1000}s:`, credsResult);
+    } catch (err) {
+      console.error(`[WhatsApp Sequence 2/2] Error sending credentials to ${data.destination}:`, err);
+    }
+  }, delayMs);
+
+  return kycResult;
+}
+
+export interface SakhiApprovedPayload {
+  destination: string;
+  userName: string;
+  loginId?: string;
+  password?: string;
+  referralCode?: string;
+  delayMs?: number;
+}
+
+export async function sendSakhiApprovedMessage(data: SakhiApprovedPayload) {
+  if (data.loginId && data.password && data.referralCode) {
+    return sendSakhiApprovalSequence({
+      destination: data.destination,
+      userName: data.userName,
+      loginId: data.loginId,
+      password: data.password,
+      referralCode: data.referralCode,
+      delayMs: data.delayMs,
+    });
+  }
+
+  const campaignName = process.env.WHATSAPP_CAMPAIGN_SAKHI_APPROVED || 'sakhi_approved1';
+  return sendWhatsAppMessage({
+    campaignName,
+    destination: data.destination,
+    userName: data.userName,
+    templateParams: [data.userName],
+  });
+}
+
+export interface SakhiFailedPayload {
+  destination: string;
+  userName: string;
+}
+
+export async function sendSakhiFailedMessage(data: SakhiFailedPayload) {
+  const campaignName = process.env.WHATSAPP_CAMPAIGN_SAKHI_FAILED || 'sakhi_failed';
+  return sendWhatsAppMessage({
+    campaignName,
+    destination: data.destination,
+    userName: data.userName,
+    templateParams: [data.userName],
+  });
+}
+

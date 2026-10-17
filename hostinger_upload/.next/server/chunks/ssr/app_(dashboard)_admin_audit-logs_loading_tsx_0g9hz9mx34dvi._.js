@@ -1,3 +1,0 @@
-module.exports=[2233,a=>{"use strict";var b=a.i(7997),c=a.i(40579);a.s(["default",0,function(){return(0,b.jsxs)("div",{className:"space-y-6",children:[(0,b.jsxs)("div",{className:"space-y-2",children:[(0,b.jsx)(c.l,{className:"h-8 w-48"}),(0,b.jsx)(c.l,{className:"h-4 w-72"})]}),(0,b.jsx)("div",{className:"bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center",children:(0,b.jsx)(c.l,{className:"h-10 w-full sm:w-72 rounded-lg"})}),(0,b.jsx)(c.h,{rows:8,cols:5})]})}])},7659,function(a){a.n(a.i(2233))}];
-
-//# sourceMappingURL=app_%28dashboard%29_admin_audit-logs_loading_tsx_0g9hz9mx34dvi._.js.map

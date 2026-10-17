@@ -27,3 +27,25 @@ export async function changeUserStatus(userId: string, newStatus: UserStatus, re
     return { error: error.message || 'Failed to update status' };
   }
 }
+
+export async function deleteUser(userId: string) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user.role !== UserRole.ROOT_ADMIN) {
+    return { error: 'Unauthorized' };
+  }
+
+  try {
+    await connectDB();
+    const { deleteUserPermanently } = await import('@/services/user.service');
+    await deleteUserPermanently(userId, session.user.id);
+    revalidatePath(`/admin/users`);
+    revalidatePath(`/admin/employees`);
+    revalidatePath(`/admin/sakhi`);
+    revalidatePath(`/admin/sakhis`);
+    return { success: true };
+  } catch (error: any) {
+    return { error: error.message || 'Failed to delete user' };
+  }
+}
+

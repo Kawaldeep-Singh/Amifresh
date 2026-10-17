@@ -7,9 +7,12 @@ import connectDB from '@/lib/mongodb';
 import { getUserById } from '@/services/user.service';
 import { getDirectReferrals } from '@/services/referral.service';
 import Link from 'next/link';
-import { ArrowLeft, User, Shield, Network, Calendar, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, User, Shield, Network, Calendar, Phone, Mail, FileText } from 'lucide-react';
 import StatusButtons from './StatusButtons';
 import NetworkTreeViewer from '@/components/network/NetworkTreeViewer';
+import UserDocumentsViewer from './UserDocumentsViewer';
+import QuickViewDocButton from '@/components/documents/QuickViewDocButton';
+import { isImageData, getSafeImageSrc } from '@/lib/utils/documentHelper';
 
 export const metadata: Metadata = {
   title: 'User Details | Amifresh Admin',
@@ -56,6 +59,29 @@ export default async function AdminUserDetailsPage({
   const backHref = user.role === 'TEAM' ? '/admin/employees' : user.role === 'SAKHI' ? '/admin/sakhi' : '/admin/users';
   const roleLabel = user.role === 'TEAM' ? 'Employees' : user.role === 'SAKHI' ? 'Sakhi' : 'Users';
 
+  // Check document types
+  const isPanImage = isImageData(user.panCard);
+  const aadhaarFrontDoc = isImageData(user.aadhaarCardFront) 
+    ? user.aadhaarCardFront 
+    : (isImageData(user.aadhaarCard) ? user.aadhaarCard : null);
+  const aadhaarBackDoc = isImageData(user.aadhaarCardBack) ? user.aadhaarCardBack : null;
+  const isAadhaarImage = Boolean(aadhaarFrontDoc || aadhaarBackDoc);
+
+  const aadhaarDocs = [
+    ...(aadhaarFrontDoc ? [{
+      id: 'aadhaar_front',
+      title: 'Aadhaar Card (Front)',
+      src: getSafeImageSrc(aadhaarFrontDoc),
+      subtitle: `${user.name}'s Aadhaar Card (Front Side)`
+    }] : []),
+    ...(aadhaarBackDoc ? [{
+      id: 'aadhaar_back',
+      title: 'Aadhaar Card (Back)',
+      src: getSafeImageSrc(aadhaarBackDoc),
+      subtitle: `${user.name}'s Aadhaar Card (Back Side)`
+    }] : [])
+  ];
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header Navigation */}
@@ -77,10 +103,19 @@ export default async function AdminUserDetailsPage({
         <div className="px-6 sm:px-10 pb-8 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 mb-6">
             {/* Avatar */}
-            <div className="w-32 h-32 rounded-full bg-white p-1 shadow-lg shrink-0">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-light to-primary flex items-center justify-center text-4xl font-bold text-white">
-                {initials}
-              </div>
+            <div className="w-32 h-32 rounded-full bg-white p-1 shadow-lg shrink-0 overflow-hidden">
+              {user.photo && isImageData(user.photo) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getSafeImageSrc(user.photo)}
+                  alt={user.name}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-light to-primary flex items-center justify-center text-4xl font-bold text-white">
+                  {initials}
+                </div>
+              )}
             </div>
             
             {/* Primary Info */}
@@ -165,12 +200,63 @@ export default async function AdminUserDetailsPage({
               <dd className="mt-1 text-sm text-gray-900">{user.phone || 'N/A'}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">PAN Card Number</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono uppercase">{user.panCard || 'N/A'}</dd>
+              <dt className="text-sm font-medium text-gray-500">PAN Card</dt>
+              <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-2">
+                {isPanImage ? (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                      Document Uploaded
+                    </span>
+                    <QuickViewDocButton
+                      docValue={user.panCard}
+                      docTitle="PAN Card"
+                      userName={user.name}
+                      buttonText="View PAN Card"
+                      variant="button"
+                    />
+                  </>
+                ) : (
+                  <span className="font-mono uppercase">{user.panCard || 'N/A'}</span>
+                )}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Aadhaar Card Number</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{user.aadhaarCard || 'N/A'}</dd>
+              <dt className="text-sm font-medium text-gray-500">Aadhaar Card</dt>
+              <dd className="mt-1 text-sm text-gray-900 flex flex-wrap items-center justify-between gap-2">
+                {isAadhaarImage ? (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                      Document Uploaded
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {aadhaarFrontDoc && (
+                        <QuickViewDocButton
+                          docValue={aadhaarFrontDoc}
+                          docTitle="Aadhaar Card (Front)"
+                          userName={user.name}
+                          buttonText="View Front"
+                          variant="button"
+                          documents={aadhaarDocs}
+                          initialDocId="aadhaar_front"
+                        />
+                      )}
+                      {aadhaarBackDoc && (
+                        <QuickViewDocButton
+                          docValue={aadhaarBackDoc}
+                          docTitle="Aadhaar Card (Back)"
+                          userName={user.name}
+                          buttonText="View Back"
+                          variant="button"
+                          documents={aadhaarDocs}
+                          initialDocId="aadhaar_back"
+                        />
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <span className="font-mono">{user.aadhaarCard || 'N/A'}</span>
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Account Status</dt>
@@ -183,6 +269,20 @@ export default async function AdminUserDetailsPage({
           </dl>
         </div>
       </div>
+
+      {/* Dedicated KYC Verification Documents Section */}
+      <UserDocumentsViewer
+        user={{
+          name: user.name,
+          referralCode: user.referralCode,
+          role: user.role,
+          panCard: user.panCard,
+          aadhaarCard: user.aadhaarCard,
+          aadhaarCardFront: user.aadhaarCardFront,
+          aadhaarCardBack: user.aadhaarCardBack,
+          photo: user.photo,
+        }}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

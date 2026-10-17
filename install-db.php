@@ -10,7 +10,7 @@ ini_set('display_errors', 1);
 $db_host = 'localhost';
 $db_user = 'u789152685_amifresh_sakhi';
 $db_pass = 'Amifresh@1234';
-$db_name = 'u789152685_sakhi_amifresh';
+$db_name = 'u789152685_sakhi_database';
 
 // Check if .env file exists and parse it
 $env_path = __DIR__ . '/.env';

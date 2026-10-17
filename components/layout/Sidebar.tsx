@@ -27,7 +27,7 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
     // { name: 'Commissions', href: '/admin/commissions', icon: IndianRupee },
     // { name: 'Reports', href: '/admin/reports', icon: FileText },
     // { name: 'Audit Logs', href: '/admin/audit-logs', icon: Activity },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    // { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   const teamLinks = [
@@ -35,8 +35,8 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
     { name: 'My Team', href: '/team/team', icon: Users },
     { name: 'Network', href: '/team/network', icon: Network },
     { name: 'Registrations', href: '/team/registrations', icon: UserPlus },
-    { name: 'Sales', href: '/team/sales', icon: ShoppingCart },
-    { name: 'Commissions', href: '/team/commissions', icon: IndianRupee },
+    // { name: 'Sales', href: '/team/sales', icon: ShoppingCart },
+    // { name: 'Commissions', href: '/team/commissions', icon: IndianRupee },
     { name: 'Profile', href: '/team/profile', icon: Settings },
   ];
 
@@ -44,9 +44,9 @@ export function Sidebar({ role, isOpen, setIsOpen }: SidebarProps) {
     { name: 'Dashboard', href: '/sakhi/dashboard', icon: LayoutDashboard },
     { name: 'My Referrals', href: '/sakhi/referrals', icon: UserPlus },
     { name: 'My Network', href: '/sakhi/network', icon: Network },
-    { name: 'Products', href: '/sakhi/products', icon: Package },
-    { name: 'My Orders', href: '/sakhi/orders', icon: ShoppingCart },
-    { name: 'My Commission', href: '/sakhi/commission', icon: IndianRupee },
+    // { name: 'Products', href: '/sakhi/products', icon: Package },
+    // { name: 'My Orders', href: '/sakhi/orders', icon: ShoppingCart },
+    // { name: 'My Commission', href: '/sakhi/commission', icon: IndianRupee },
     { name: 'Profile', href: '/sakhi/profile', icon: Settings },
   ];
 

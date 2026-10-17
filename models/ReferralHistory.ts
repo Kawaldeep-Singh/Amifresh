@@ -21,8 +21,8 @@ export const ReferralHistory = {
 
     for (const item of items) {
       const id = item.id || item._id || crypto.randomUUID();
-      const referrer = typeof item.referrer === 'object' ? item.referrer.toString() : item.referrer;
-      const referredUser = typeof item.referredUser === 'object' ? item.referredUser.toString() : item.referredUser;
+      const referrer = typeof item.referrer === 'object' && item.referrer ? (item.referrer.id || item.referrer._id || String(item.referrer)) : item.referrer;
+      const referredUser = typeof item.referredUser === 'object' && item.referredUser ? (item.referredUser.id || item.referredUser._id || String(item.referredUser)) : item.referredUser;
 
       await execute(
         `INSERT INTO referral_histories (id, referrer, referredUser, referralCode, registrationDate, approvalDate, status, createdAt, updatedAt)

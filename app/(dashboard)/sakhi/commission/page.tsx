@@ -1,6 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { IndianRupee } from 'lucide-react';
 import { PlaceholderState } from '@/components/ui/PlaceholderState';
+
+export const metadata: Metadata = {
+  title: 'My Earnings & Commission | Amifresh Sakhi',
+};
 
 export default function MemberCommissionPage() {
   return (

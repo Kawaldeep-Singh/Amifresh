@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { UserPlus, Check, X, Eye } from 'lucide-react';
 import { TableSkeleton } from '@/components/ui/Skeleton';
+import DocumentPreviewModal, { DocumentItem } from '@/components/documents/DocumentPreviewModal';
+import { isImageData, getSafeImageSrc } from '@/lib/utils/documentHelper';
 
 export default function RegistrationsPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -12,7 +14,7 @@ export default function RegistrationsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('PENDING');
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
-  const [assignedRole, setAssignedRole] = useState('SAKHI');
+  const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
 
   const [credentials, setCredentials] = useState<{email: string, loginId: string, tempPassword: string} | null>(null);
 
@@ -30,6 +32,7 @@ export default function RegistrationsPage() {
   };
 
   useEffect(() => {
+    document.title = 'Sakhi Registrations & KYC | Amifresh Admin';
     let isMounted = true;
     const load = async () => {
       // Small delay to prevent synchronous setState warning in effect
@@ -235,16 +238,46 @@ export default function RegistrationsPage() {
                   {['photo', 'panCard', 'aadhaarCardFront', 'aadhaarCardBack'].map(docType => {
                     const docValue = selectedRequest[docType] || (docType === 'aadhaarCardFront' ? selectedRequest.aadhaarCard : null);
                     const labels: any = { photo: 'Profile Photo', panCard: 'PAN Card', aadhaarCardFront: 'Aadhaar (Front)', aadhaarCardBack: 'Aadhaar (Back)' };
+                    const isImg = docValue && isImageData(docValue);
+
                     return (
-                      <div key={docType} className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex flex-col items-center justify-center text-center">
-                        <span className="text-xs font-semibold text-gray-500 uppercase mb-2">{labels[docType]}</span>
-                        {docValue ? (
-                          <div className="relative w-full h-32 bg-gray-200 rounded-md overflow-hidden">
-                             {docValue.startsWith('data:image') ? (
-                               <img src={docValue} alt={docType} className="w-full h-full object-cover" />
-                             ) : (
-                               <div className="flex items-center justify-center h-full text-xs text-gray-500">Document Uploaded</div>
-                             )}
+                      <div key={docType} className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex flex-col items-center justify-between text-center group">
+                        <span className="text-xs font-semibold text-gray-700 uppercase mb-2">{labels[docType]}</span>
+                        {isImg ? (
+                          <>
+                            <div 
+                              onClick={() => setPreviewDoc({
+                                id: docType,
+                                title: labels[docType],
+                                src: getSafeImageSrc(docValue),
+                                subtitle: `${selectedRequest.name}'s ${labels[docType]}`
+                              })}
+                              className="relative w-full h-32 bg-gray-200 rounded-md overflow-hidden cursor-pointer group-hover:ring-2 ring-primary transition-all flex items-center justify-center"
+                              title={`Click to view ${labels[docType]}`}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={getSafeImageSrc(docValue)} alt={docType} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1">
+                                <Eye size={14} /> Full View
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewDoc({
+                                id: docType,
+                                title: labels[docType],
+                                src: getSafeImageSrc(docValue),
+                                subtitle: `${selectedRequest.name}'s ${labels[docType]}`
+                              })}
+                              className="mt-2 text-xs font-bold text-primary hover:text-primary-dark inline-flex items-center gap-1.5 py-1 px-2.5 rounded bg-primary-light/30 hover:bg-primary-light transition-colors"
+                            >
+                              <Eye size={13} /> View {labels[docType].split(' ')[0]}
+                            </button>
+                          </>
+                        ) : docValue ? (
+                          <div className="w-full h-32 flex flex-col items-center justify-center bg-gray-100 rounded-md p-2">
+                            <span className="text-xs text-gray-500 font-medium">Document Number</span>
+                            <span className="text-xs font-mono font-bold mt-1 text-gray-800 uppercase">{docValue}</span>
                           </div>
                         ) : (
                           <div className="w-full h-32 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md text-gray-400 text-xs">
@@ -258,44 +291,31 @@ export default function RegistrationsPage() {
               </div>
 
             </div>
-            <div className="p-4 sm:p-6 border-t border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-gray-50 rounded-b-xl">
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-gray-700 whitespace-nowrap">Assign Role:</label>
-                <select 
-                  className="border border-gray-300 bg-white rounded-md text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  value={assignedRole}
-                  onChange={(e) => setAssignedRole(e.target.value)}
-                >
-                  <option value="SAKHI">Sakhi (Default)</option>
-                  <option value="TEAM">Team (Internal)</option>
-                </select>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedRequest(null)}
-                  className="flex-1 sm:flex-none"
-                >
-                  Close
-                </Button>
-                <Button 
-                  variant="danger"
-                  isLoading={processingId === selectedRequest._id}
-                  disabled={processingId !== null}
-                  onClick={() => handleAction(selectedRequest._id, 'REJECT')}
-                  className="flex-1 sm:flex-none"
-                >
-                  <X size={16} className="mr-1" /> Reject
-                </Button>
-                <Button 
-                  className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
-                  isLoading={processingId === selectedRequest._id}
-                  disabled={processingId !== null}
-                  onClick={() => handleAction(selectedRequest._id, 'APPROVE', assignedRole)}
-                >
-                  <Check size={16} className="mr-1" /> Approve & Generate ID
-                </Button>
-              </div>
+            <div className="p-4 sm:p-5 border-t border-gray-100 flex flex-row items-center justify-end gap-2 sm:gap-3 bg-gray-50 rounded-b-xl">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedRequest(null)}
+                className="whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm"
+              >
+                Close
+              </Button>
+              <Button 
+                variant="danger"
+                isLoading={processingId === selectedRequest._id}
+                disabled={processingId !== null}
+                onClick={() => handleAction(selectedRequest._id, 'REJECT')}
+                className="whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm"
+              >
+                <X size={16} className="mr-1" /> Reject
+              </Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap px-3 sm:px-5 text-xs sm:text-sm"
+                isLoading={processingId === selectedRequest._id}
+                disabled={processingId !== null}
+                onClick={() => handleAction(selectedRequest._id, 'APPROVE', 'SAKHI')}
+              >
+                <Check size={16} className="mr-1" /> Approve & Generate ID
+              </Button>
             </div>
           </div>
         </div>
@@ -334,6 +354,15 @@ export default function RegistrationsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {previewDoc && (
+        <DocumentPreviewModal
+          isOpen={Boolean(previewDoc)}
+          onClose={() => setPreviewDoc(null)}
+          documents={[previewDoc]}
+          userName={selectedRequest?.name || 'Applicant'}
+        />
       )}
     </>
   );

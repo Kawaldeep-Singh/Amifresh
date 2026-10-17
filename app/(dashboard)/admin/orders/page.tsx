@@ -1,6 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { ShoppingCart } from 'lucide-react';
 import { PlaceholderState } from '@/components/ui/PlaceholderState';
+
+export const metadata: Metadata = {
+  title: 'Order Management | Amifresh Admin',
+};
 
 export default function AdminOrdersPage() {
   return (

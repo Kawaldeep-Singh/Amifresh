@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -5,6 +6,10 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Link from 'next/link';
 import { ShieldAlert } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'My Profile | Amifresh Team',
+};
 
 export default async function ManagerProfilePage() {
   const session = await getServerSession(authOptions);

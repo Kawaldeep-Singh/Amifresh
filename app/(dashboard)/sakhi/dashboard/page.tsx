@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -5,6 +6,10 @@ import { redirect } from 'next/navigation';
 import { Users, ShoppingCart, IndianRupee, Activity } from 'lucide-react';
 import { getSakhiDashboardStats } from '@/services/dashboard.service';
 import ReferralLink from '@/components/dashboard/ReferralLink';
+
+export const metadata: Metadata = {
+  title: 'Sakhi Dashboard | Amifresh Sakhi',
+};
 
 export default async function SakhiDashboard() {
   await connection();

@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import dbConnect from '@/lib/mongodb';
-import User, { UserRole } from '@/models/User';
+import { query } from '@/lib/mysql';
+import { UserRole } from '@/types/user';
 
 export async function GET(req: Request, props: { params: Promise<{ userId: string }> }) {
-  // Opt into dynamic rendering
-  const url = req.url;
   try {
     const session = await getServerSession(authOptions);
     
@@ -14,94 +12,68 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
-
     const { userId } = await props.params;
 
     // Security check: Only Root Admin can view arbitrary trees.
-    // Managers and Members can only view their own tree or sub-trees.
-    if (session.user.role !== UserRole.ROOT_ADMIN) {
-      // Basic check: is the requested userId the same as session.user.id?
-      // For a more robust check, we'd need to verify if the userId is actually in the session user's downline.
-      // We'll allow them to view their own tree to start.
-      if (session.user.id !== userId) {
-        // TODO: Validate if requested user is in the downline of session user
-        // return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
+    if (session.user.role !== UserRole.ROOT_ADMIN && session.user.id !== userId) {
+      // Allow user to view their own tree
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch the target user
-    const targetUser = await User.findById(userId).select('name email role status referralCode createdAt totalSales totalCommission');
-    if (!targetUser) {
+    // Fetch all users to construct complete hierarchy
+    const allUsers = await query<any>(
+      `SELECT id, name, email, phone, role, status, referralCode, referredBy, 
+              COALESCE(totalSales, 0) as totalSales, 
+              COALESCE(totalCommission, 0) as totalCommission, 
+              createdAt 
+       FROM users 
+       ORDER BY createdAt ASC`
+    );
+
+    // Map all users by ID
+    const userMap = new Map<string, any>();
+    allUsers.forEach((u) => {
+      userMap.set(u.id, {
+        _id: u.id,
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+        status: u.status,
+        referralCode: u.referralCode,
+        referredBy: u.referredBy || null,
+        totalSales: Number(u.totalSales || 0),
+        totalCommission: Number(u.totalCommission || 0),
+        createdAt: u.createdAt,
+        children: [],
+      });
+    });
+
+    if (!userMap.has(userId)) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Build the tree recursively
-    // Note: For large networks, recursive queries in Node can be slow. 
-    // In a production system with deep networks, you might use MongoDB's $graphLookup.
-    // We will use $graphLookup here for better performance.
-    
-    const tree = await User.aggregate([
-      { $match: { _id: targetUser._id } },
-      {
-        $graphLookup: {
-          from: 'users',
-          startWith: '$_id',
-          connectFromField: '_id',
-          connectToField: 'referredBy',
-          as: 'network',
-          maxDepth: 10,
-          depthField: 'level'
-        }
-      },
-      {
-        $project: {
-          name: 1,
-          email: 1,
-          role: 1,
-          status: 1,
-          referralCode: 1,
-          createdAt: 1,
-          totalSales: 1,
-          totalCommission: 1,
-          network: {
-            _id: 1,
-            name: 1,
-            email: 1,
-            role: 1,
-            status: 1,
-            referralCode: 1,
-            referredBy: 1,
-            level: 1,
-            totalSales: 1,
-            totalCommission: 1,
-            createdAt: 1
-          }
-        }
+    // Connect child nodes to parents
+    userMap.forEach((node) => {
+      if (node.referredBy && userMap.has(node.referredBy)) {
+        userMap.get(node.referredBy).children.push(node);
       }
-    ]);
+    });
 
-    if (!tree || tree.length === 0) {
-      return NextResponse.json({ tree: null });
-    }
-
-    // Format the flat array from $graphLookup into a hierarchical tree structure
-    const formatTree = (rootNode: any, allNodes: any[]): any => {
-      const children = allNodes
-        .filter(n => n.referredBy && n.referredBy.toString() === rootNode._id.toString())
-        .map(n => formatTree(n, allNodes));
-      
-      return {
-        ...rootNode,
-        children: children.length > 0 ? children : undefined
-      };
+    // Cleanup empty children arrays to undefined so TreeNode UI handles leaf nodes cleanly
+    const cleanNode = (node: any): any => {
+      if (node.children && node.children.length > 0) {
+        node.children = node.children.map(cleanNode);
+      } else {
+        node.children = undefined;
+      }
+      return node;
     };
 
-    const rootData: any = tree[0];
-    const hierarchicalTree = formatTree(rootData, rootData.network || []);
+    const targetTree = cleanNode(userMap.get(userId));
 
-    return NextResponse.json({ tree: hierarchicalTree });
-    
+    return NextResponse.json({ tree: targetTree });
   } catch (error: any) {
     console.error('Referral Tree Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

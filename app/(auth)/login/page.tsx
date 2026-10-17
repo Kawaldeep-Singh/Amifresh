@@ -28,6 +28,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    document.title = 'Sakhi/ Partner Login';
   }, []);
 
   const {
@@ -142,7 +143,7 @@ export default function LoginPage() {
                 <span>Women Exclusive</span>
               </div>
               <h2 className={`${poppins.className} text-xl sm:text-2xl font-black text-[#1F2937]`}>
-                Sakhi Partner Login
+                Sakhi / Partner Login
               </h2>
               <p className="text-xs text-[#1B7F4B] font-bold mt-1">
                 Sign in to your sales &amp; earnings dashboard

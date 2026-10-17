@@ -4,15 +4,11 @@ import { getServerSession } from 'next-auth';
 import { hashPassword } from '@/lib/auth/password';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
-import mongoose from 'mongoose';
-import RegistrationRequest, { RegistrationStatus } from '@/models/RegistrationRequest';
 import User, { UserRole, UserStatus } from '@/models/User';
 import ReferralHistory from '@/models/ReferralHistory';
 import AuditLog from '@/models/AuditLog';
-import { generateUniqueReferralCode } from '@/services/referral.service';
 
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
-  let session = null;
   try {
     const nextAuthSession = await getServerSession(authOptions);
     
@@ -33,33 +29,30 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     }
 
     await dbConnect();
-    
-    session = await mongoose.startSession();
-    session.startTransaction();
 
-    const request = await User.findById(requestId).session(session);
+    const request = await User.findById(requestId);
     if (!request) {
-      await session.abortTransaction();
       return NextResponse.json({ error: 'User registration not found' }, { status: 404 });
     }
 
     if (request.status !== UserStatus.PENDING) {
-      await session.abortTransaction();
       return NextResponse.json({ error: 'Request is already processed' }, { status: 400 });
     }
 
     let tempPassword = '';
 
     if (action === 'APPROVE') {
-      // Generate unique loginId (SAKHI + 6 random digits)
-      let uniqueLoginId = '';
-      let isUnique = false;
-      while (!isUnique) {
-        const randomNum = Math.floor(100000 + Math.random() * 900000);
-        uniqueLoginId = `SAKHI${randomNum}`;
-        const existingLoginId = await User.findOne({ loginId: uniqueLoginId }).session(session);
-        if (!existingLoginId) {
-          isUnique = true;
+      // Use existing assigned loginId (SAKHI...) or generate unique loginId
+      let uniqueLoginId = request.loginId || '';
+      if (!uniqueLoginId) {
+        let isUnique = false;
+        while (!isUnique) {
+          const randomNum = Math.floor(100000 + Math.random() * 900000);
+          uniqueLoginId = `SAKHI${randomNum}`;
+          const existingLoginId = await User.findOne({ loginId: uniqueLoginId });
+          if (!existingLoginId) {
+            isUnique = true;
+          }
         }
       }
 
@@ -73,45 +66,91 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
       request.role = role === 'TEAM' ? UserRole.TEAM : UserRole.SAKHI;
       request.status = UserStatus.ACTIVE;
 
+      // Extract referrer ID correctly whether it's an object or string
+      const referrerId = typeof request.referredBy === 'object' && request.referredBy
+        ? (request.referredBy.id || request.referredBy._id)
+        : request.referredBy;
+
       // Create ReferralHistory if referrer exists
-      if (request.referredBy) {
-        await ReferralHistory.create([{
-          referrer: request.referredBy,
-          referredUser: request._id,
-          referralCode: request.referralCode,
-          status: 'APPROVED',
-          registrationDate: request.createdAt,
-          approvalDate: new Date(),
-        }], { session });
+      if (referrerId) {
+        try {
+          await ReferralHistory.create({
+            referrer: referrerId,
+            referredUser: request.id || request._id,
+            referralCode: request.referralCode,
+            status: 'APPROVED',
+            registrationDate: request.createdAt,
+            approvalDate: new Date(),
+          });
+        } catch (rhErr) {
+          console.error('ReferralHistory creation warning:', rhErr);
+        }
       }
 
-      await AuditLog.create([{
-        performedBy: nextAuthSession.user.id,
-        action: 'REGISTRATION_APPROVED',
-        entityType: 'User',
-        entityId: request._id,
-        description: `Approved registration for ${request.email}. Generated ID: ${uniqueLoginId}`,
-      }], { session });
+      try {
+        await AuditLog.create({
+          performedBy: nextAuthSession.user.id,
+          action: 'REGISTRATION_APPROVED',
+          entityType: 'User',
+          entityId: request.id || request._id,
+          description: `Approved registration for ${request.email}. Generated ID: ${uniqueLoginId}`,
+        });
+      } catch (alErr) {
+        console.error('AuditLog creation warning:', alErr);
+      }
 
-      await request.save({ session });
+      await request.save();
+
+      // Send WhatsApp approval notification sequence:
+      // 1. KYC Approved message immediately (sakhi_approved1)
+      // 2. Account Created message (sample_given1) with ID/Password & referral link after 12-15 seconds
+      if (request.phone) {
+        try {
+          const { sendSakhiApprovalSequence } = await import('@/services/whatsapp.service');
+          await sendSakhiApprovalSequence({
+            destination: request.phone,
+            userName: request.name,
+            loginId: uniqueLoginId,
+            password: tempPassword,
+            referralCode: request.referralCode,
+            delayMs: 12000,
+          });
+        } catch (waErr) {
+          console.error('WhatsApp approval notification sequence warning:', waErr);
+        }
+      }
 
     } else if (action === 'REJECT') {
       request.status = UserStatus.REJECTED;
       request.statusRemark = reason;
 
-      await AuditLog.create([{
-        performedBy: nextAuthSession.user.id,
-        action: 'REGISTRATION_REJECTED',
-        entityType: 'User',
-        entityId: request._id,
-        description: `Rejected registration for ${request.email}. Reason: ${reason}`,
-      }], { session });
+      try {
+        await AuditLog.create({
+          performedBy: nextAuthSession.user.id,
+          action: 'REGISTRATION_REJECTED',
+          entityType: 'User',
+          entityId: request.id || request._id,
+          description: `Rejected registration for ${request.email}. Reason: ${reason}`,
+        });
+      } catch (alErr) {
+        console.error('AuditLog creation warning:', alErr);
+      }
 
-      await request.save({ session });
+      await request.save();
+
+      // Send WhatsApp rejection notification using sakhi_failed campaign
+      if (request.phone) {
+        try {
+          const { sendSakhiFailedMessage } = await import('@/services/whatsapp.service');
+          await sendSakhiFailedMessage({
+            destination: request.phone,
+            userName: request.name,
+          });
+        } catch (waErr) {
+          console.error('WhatsApp rejection notification warning:', waErr);
+        }
+      }
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     if (action === 'APPROVE') {
       return NextResponse.json({
@@ -130,11 +169,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     }
   } catch (error: any) {
     console.error('Process Registration Error:', error);
-    if (session) {
-      await session.abortTransaction();
-      session.endSession();
-    }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
 

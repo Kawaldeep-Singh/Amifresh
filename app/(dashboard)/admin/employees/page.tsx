@@ -182,7 +182,7 @@ export default async function AdminEmployeesPage({
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Joined Date
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -266,7 +266,7 @@ export default async function AdminEmployeesPage({
                         })}
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                         <UserTableActions
                           userId={employee._id.toString()}
                           userReferralCode={employee.referralCode}

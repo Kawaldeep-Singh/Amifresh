@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
@@ -5,6 +6,12 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Link from 'next/link';
 import { ShieldAlert } from 'lucide-react';
+import QuickViewDocButton from '@/components/documents/QuickViewDocButton';
+import { isImageData, getSafeImageSrc } from '@/lib/utils/documentHelper';
+
+export const metadata: Metadata = {
+  title: 'My Profile | Amifresh Sakhi',
+};
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -19,6 +26,28 @@ export default async function ProfilePage() {
   if (!user) {
     redirect('/login');
   }
+
+  const isPanImage = isImageData(user.panCard);
+  const aadhaarFrontDoc = isImageData(user.aadhaarCardFront)
+    ? user.aadhaarCardFront
+    : (isImageData(user.aadhaarCard) ? user.aadhaarCard : null);
+  const aadhaarBackDoc = isImageData(user.aadhaarCardBack) ? user.aadhaarCardBack : null;
+  const isAadhaarImage = Boolean(aadhaarFrontDoc || aadhaarBackDoc);
+
+  const aadhaarDocs = [
+    ...(aadhaarFrontDoc ? [{
+      id: 'aadhaar_front',
+      title: 'Aadhaar Card (Front)',
+      src: getSafeImageSrc(aadhaarFrontDoc),
+      subtitle: `${user.name}'s Aadhaar Card (Front Side)`
+    }] : []),
+    ...(aadhaarBackDoc ? [{
+      id: 'aadhaar_back',
+      title: 'Aadhaar Card (Back)',
+      src: getSafeImageSrc(aadhaarBackDoc),
+      subtitle: `${user.name}'s Aadhaar Card (Back Side)`
+    }] : [])
+  ];
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -80,12 +109,63 @@ export default async function ProfilePage() {
                   <dd className="mt-1 text-sm text-gray-900">{user.phone || 'N/A'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">PAN Card Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900 font-mono uppercase">{user.panCard || 'N/A'}</dd>
+                  <dt className="text-sm font-medium text-gray-500">PAN Card</dt>
+                  <dd className="mt-1 text-sm text-gray-900 flex items-center justify-between gap-2">
+                    {isPanImage ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                          Document Uploaded
+                        </span>
+                        <QuickViewDocButton
+                          docValue={user.panCard}
+                          docTitle="PAN Card"
+                          userName={user.name}
+                          buttonText="View PAN"
+                          variant="button"
+                        />
+                      </>
+                    ) : (
+                      <span className="font-mono uppercase">{user.panCard || 'N/A'}</span>
+                    )}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Aadhaar Card Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900 font-mono">{user.aadhaarCard || 'N/A'}</dd>
+                  <dt className="text-sm font-medium text-gray-500">Aadhaar Card</dt>
+                  <dd className="mt-1 text-sm text-gray-900 flex flex-wrap items-center justify-between gap-2">
+                    {isAadhaarImage ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                          Document Uploaded
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {aadhaarFrontDoc && (
+                            <QuickViewDocButton
+                              docValue={aadhaarFrontDoc}
+                              docTitle="Aadhaar Card (Front)"
+                              userName={user.name}
+                              buttonText="View Front"
+                              variant="button"
+                              documents={aadhaarDocs}
+                              initialDocId="aadhaar_front"
+                            />
+                          )}
+                          {aadhaarBackDoc && (
+                            <QuickViewDocButton
+                              docValue={aadhaarBackDoc}
+                              docTitle="Aadhaar Card (Back)"
+                              userName={user.name}
+                              buttonText="View Back"
+                              variant="button"
+                              documents={aadhaarDocs}
+                              initialDocId="aadhaar_back"
+                            />
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <span className="font-mono">{user.aadhaarCard || 'N/A'}</span>
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Role & Status</dt>

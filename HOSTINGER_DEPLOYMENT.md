@@ -5,7 +5,7 @@ Yeh branch (`SQL`) poori tarah se **MySQL Database** aur **Hostinger Shared Host
 ---
 
 ## 📋 Database Details (Already Configured)
-* **Database Name:** `u789152685_sakhi_amifresh`
+* **Database Name:** `u789152685_sakhi_database`
 * **MySQL Username:** `u789152685_amifresh_sakhi`
 * **MySQL Password:** `Amifresh@1234`
 * **MySQL Host:** `localhost` (Hostinger server par `localhost` use hota hai)
@@ -59,7 +59,7 @@ Yeh branch (`SQL`) poori tarah se **MySQL Database** aur **Hostinger Shared Host
    DB_PORT=3306
    DB_USER=u789152685_amifresh_sakhi
    DB_PASSWORD=Amifresh@1234
-   DB_NAME=u789152685_sakhi_amifresh
+   DB_NAME=u789152685_sakhi_database
    AUTH_SECRET=my_super_secret_auth_secret_key_123!
    NEXTAUTH_URL=https://sakhi.amifresh.in
    ```

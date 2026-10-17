@@ -1,6 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { UserPlus } from 'lucide-react';
 import { PlaceholderState } from '@/components/ui/PlaceholderState';
+
+export const metadata: Metadata = {
+  title: 'Team Registrations | Amifresh Team',
+};
 
 export default function ManagerRegistrationsPage() {
   return (

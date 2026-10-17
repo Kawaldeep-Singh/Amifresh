@@ -200,7 +200,7 @@ export default async function AdminSakhiPage({
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Joined Date
                 </th>
-                <th className="px-6 py-3.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -293,8 +293,8 @@ export default async function AdminSakhiPage({
                         })}
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
+                        <div className="flex items-center justify-start gap-1.5">
                           <Link
                             href={`/admin/network?root=${sakhi.referralCode}`}
                             className="text-gray-500 hover:text-primary p-1.5 rounded-lg hover:bg-gray-100 transition-colors"

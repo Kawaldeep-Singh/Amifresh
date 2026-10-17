@@ -2,14 +2,37 @@
 
 import { useState } from 'react';
 import { UserStatus } from '@/types/user';
-import { changeUserStatus } from './actions';
-import { Key, Eye, CheckCircle, Ban, Clock } from 'lucide-react';
+import { Key, Eye, CheckCircle, Ban, Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { changeUserStatus, deleteUser } from './actions';
 
 export default function UserTableActions({ userId, userReferralCode, currentStatus, isSelf }: { userId: string, userReferralCode: string, currentStatus: UserStatus, isSelf: boolean }) {
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState<{loginId: string, tempPassword: string} | null>(null);
+
+  const handleDeleteUser = async () => {
+    if (isSelf) {
+      alert("You cannot delete your own account.");
+      return;
+    }
+
+    const confirmed = confirm(
+      "⚠️ DANGER / ALERT:\n\nAre you sure you want to PERMANENTLY DELETE this user?\n\nThis will completely remove their account, credentials, and data. This action CANNOT be undone!"
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    const res = await deleteUser(userId);
+    setLoading(false);
+
+    if (res?.error) {
+      alert(res.error);
+    } else {
+      alert("User has been permanently deleted.");
+      window.location.reload();
+    }
+  };
 
   const handleStatusChange = async (newStatus: UserStatus) => {
     if (isSelf && newStatus !== UserStatus.ACTIVE) {
@@ -65,13 +88,13 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-start gap-1.5">
         <Link href={`/admin/users/${userReferralCode}`} className="text-primary hover:text-primary-dark inline-flex items-center gap-1 bg-primary-light px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium">
           <Eye size={16} /> <span className="hidden sm:inline">View</span>
         </Link>
 
         {!isSelf && currentStatus !== UserStatus.PENDING && (
-          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden ml-1 bg-white">
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white divide-x divide-gray-200">
             {currentStatus !== UserStatus.ACTIVE && (
               <button 
                 onClick={() => handleStatusChange(UserStatus.ACTIVE)}
@@ -86,7 +109,7 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
               <button 
                 onClick={() => handleStatusChange(UserStatus.INACTIVE)}
                 disabled={loading}
-                className="p-1.5 text-gray-500 hover:bg-gray-100 transition-colors border-l border-r border-gray-200 disabled:opacity-50"
+                className="p-1.5 text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50"
                 title="Deactivate User"
               >
                 <Clock size={16} />
@@ -105,7 +128,7 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
             <button 
               onClick={handleResetPassword}
               disabled={loading}
-              className="p-1.5 text-blue-600 hover:bg-blue-50 transition-colors border-l border-gray-200 disabled:opacity-50"
+              className="p-1.5 text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
               title="Reset Password"
             >
               <Key size={16} />
@@ -114,9 +137,20 @@ export default function UserTableActions({ userId, userReferralCode, currentStat
         )}
 
         {currentStatus === UserStatus.PENDING && (
-          <Link href="/admin/registrations" className="text-orange-500 hover:text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium ml-1">
+          <Link href="/admin/registrations" className="text-orange-500 hover:text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium">
             Review
           </Link>
+        )}
+
+        {!isSelf && (
+          <button
+            onClick={handleDeleteUser}
+            disabled={loading}
+            className="p-1.5 text-red-500 hover:text-white hover:bg-red-600 bg-red-50 rounded-lg transition-colors border border-red-200 disabled:opacity-50"
+            title="Permanently Delete User"
+          >
+            <Trash2 size={16} />
+          </button>
         )}
       </div>
 
